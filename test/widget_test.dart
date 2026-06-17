@@ -9,7 +9,11 @@ import 'package:ponto_eletronico/models/work_day.dart';
 void main() {
   testWidgets('shows the current day period buttons', (tester) async {
     await tester.pumpWidget(
-      PontoEletronicoApp(workDayRepository: FakeWorkDayRepository()),
+      PontoEletronicoApp(
+        workDayRepository: FakeWorkDayRepository(),
+        settingsRepository: FakeSettingsRepository(),
+        nowProvider: () => DateTime(2026, 6, 16),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -19,10 +23,31 @@ void main() {
     expect(find.text('Autosave ativo'), findsOneWidget);
   });
 
+  testWidgets('shows no work message on inactive days', (tester) async {
+    await tester.pumpWidget(
+      PontoEletronicoApp(
+        workDayRepository: FakeWorkDayRepository(),
+        settingsRepository: FakeSettingsRepository(),
+        nowProvider: () => DateTime(2026, 6, 20),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hoje não há expediente aproveite sua folga!'), findsOneWidget);
+    expect(find.text('Antes do almoco'), findsNothing);
+    expect(find.text('Depois do almoco'), findsNothing);
+  });
+
   testWidgets('autosaves when a period is marked', (tester) async {
     final repository = FakeWorkDayRepository();
 
-    await tester.pumpWidget(PontoEletronicoApp(workDayRepository: repository));
+    await tester.pumpWidget(
+      PontoEletronicoApp(
+        workDayRepository: repository,
+        settingsRepository: FakeSettingsRepository(),
+        nowProvider: () => DateTime(2026, 6, 16),
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Antes do almoco'));
@@ -48,6 +73,7 @@ void main() {
     await tester.pumpWidget(
       PontoEletronicoApp(
         workDayRepository: repository,
+        settingsRepository: FakeSettingsRepository(),
         nowProvider: () => DateTime(2026, 6, 16),
       ),
     );
@@ -65,6 +91,7 @@ void main() {
       PontoEletronicoApp(
         workDayRepository: FakeWorkDayRepository(),
         settingsRepository: FakeSettingsRepository(),
+        nowProvider: () => DateTime(2026, 6, 16),
       ),
     );
     await tester.pumpAndSettle();
@@ -78,7 +105,11 @@ void main() {
 
   testWidgets('opens search from the app bar', (tester) async {
     await tester.pumpWidget(
-      PontoEletronicoApp(workDayRepository: FakeWorkDayRepository()),
+      PontoEletronicoApp(
+        workDayRepository: FakeWorkDayRepository(),
+        settingsRepository: FakeSettingsRepository(),
+        nowProvider: () => DateTime(2026, 6, 16),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -94,6 +125,7 @@ void main() {
       PontoEletronicoApp(
         workDayRepository: FakeWorkDayRepository(),
         settingsRepository: FakeSettingsRepository(),
+        nowProvider: () => DateTime(2026, 6, 16),
       ),
     );
     await tester.pumpAndSettle();
@@ -134,8 +166,11 @@ class FakeSettingsRepository extends SettingsRepository {
 
   @override
   Future<AppSettings> getSettings() async {
-    final now = DateTime(2026, 6, 16);
+    return AppSettings.empty();
+  }
 
-    return AppSettings(halfDayValueCents: 0, createdAt: now, updatedAt: now);
+  @override
+  Future<AppSettings> saveSettings(AppSettings settings) async {
+    return settings;
   }
 }

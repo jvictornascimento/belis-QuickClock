@@ -16,7 +16,9 @@ Escolhi Flutter porque eu uso iOS e meu colega usa Android. Assim, o mesmo codig
 - Dois periodos por dia: antes do almoco e depois do almoco.
 - Botoes grandes com autosave na tela inicial.
 - Edicao permitida somente no dia atual.
-- Tela de configuracao para valor de meio dia.
+- Tela de configuracao para valor de meio dia e dias de expediente.
+- Sabado e domingo podem ficar desativados.
+- Dias sem expediente mostram a mensagem de folga na home.
 - Pesquisa por data ou mes.
 - Relatorio mensal apenas com dias marcados e total em dinheiro.
 - Visualizacao e compartilhamento de relatorio em PDF.

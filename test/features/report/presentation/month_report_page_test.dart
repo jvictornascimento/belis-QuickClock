@@ -59,6 +59,13 @@ class FakeSettingsRepository extends SettingsRepository {
 
     return AppSettings(
       halfDayValueCents: valueCents,
+      activeMonday: true,
+      activeTuesday: true,
+      activeWednesday: true,
+      activeThursday: true,
+      activeFriday: true,
+      activeSaturday: false,
+      activeSunday: false,
       createdAt: now,
       updatedAt: now,
     );

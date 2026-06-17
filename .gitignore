@@ -45,4 +45,5 @@ app.*.map.json
 /android/app/release
 
 # Local database seeds
-/local_seed/
+/local_seed/*
+!/local_seed/.gitkeep

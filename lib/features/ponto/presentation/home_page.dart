@@ -5,6 +5,7 @@ import 'package:ponto_eletronico/features/ponto/domain/work_day_edit_policy.dart
 import 'package:ponto_eletronico/features/report/presentation/month_report_page.dart';
 import 'package:ponto_eletronico/features/search/presentation/search_page.dart';
 import 'package:ponto_eletronico/features/settings/presentation/settings_page.dart';
+import 'package:ponto_eletronico/models/app_settings.dart';
 import 'package:ponto_eletronico/models/work_day.dart';
 
 class HomePage extends StatefulWidget {
@@ -25,9 +26,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late final WorkDayRepository _workDayRepository;
+  late final SettingsRepository _settingsRepository;
   late final WorkDayEditPolicy _editPolicy;
+  late final DateTime _today;
   late final String _todayKey;
 
+  AppSettings? _settings;
   WorkDay? _workDay;
   bool _isLoading = true;
   bool _isSaving = false;
@@ -37,23 +41,29 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _workDayRepository = widget.workDayRepository ?? WorkDayRepository();
+    _settingsRepository = widget.settingsRepository ?? SettingsRepository();
     _editPolicy = WorkDayEditPolicy(nowProvider: widget.nowProvider);
-    _todayKey = WorkDay.dateKey((widget.nowProvider ?? DateTime.now)());
-    _loadToday();
+    _today = (widget.nowProvider ?? DateTime.now)();
+    _todayKey = WorkDay.dateKey(_today);
+    _loadState();
   }
 
-  Future<void> _loadToday() async {
+  Future<void> _loadState() async {
     try {
-      final savedWorkDay = await _workDayRepository.findByDate(_todayKey);
-      final workDay =
-          savedWorkDay ??
-          WorkDay.emptyFor((widget.nowProvider ?? DateTime.now)());
+      final results = await Future.wait([
+        _settingsRepository.getSettings(),
+        _workDayRepository.findByDate(_todayKey),
+      ]);
+      final settings = results[0] as AppSettings;
+      final savedWorkDay = results[1] as WorkDay?;
+      final workDay = savedWorkDay ?? WorkDay.emptyFor(_today);
 
       if (!mounted) {
         return;
       }
 
       setState(() {
+        _settings = settings;
         _workDay = workDay;
         _isLoading = false;
         _errorMessage = null;
@@ -133,6 +143,8 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final workDay = _workDay;
+    final settings = _settings;
+    final isWorkday = settings?.isActiveWeekday(_today.weekday) ?? true;
     final canEdit = workDay != null && _editPolicy.canEdit(workDay.date);
 
     return Scaffold(
@@ -198,6 +210,16 @@ class _HomePageState extends State<HomePage> {
               if (_isLoading)
                 const Expanded(
                   child: Center(child: CircularProgressIndicator()),
+                )
+              else if (!isWorkday)
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      'Hoje não há expediente aproveite sua folga!',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                  ),
                 )
               else if (workDay != null) ...[
                 PeriodButton(

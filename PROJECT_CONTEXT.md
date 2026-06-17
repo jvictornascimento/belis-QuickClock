@@ -64,13 +64,15 @@ Shows the current date and two large autosave buttons:
 - Before lunch
 - After lunch
 
+If the current weekday is disabled in settings, the home screen shows a folga message instead of the point buttons.
+
 ### Search
 
 Allows searching saved work days by date or month. It shows only saved records and their two period values.
 
 ### Settings
 
-Allows editing and saving the half day value in local storage.
+Allows editing and saving the half day value and the active weekdays in local storage.
 
 ### Monthly Report
 
