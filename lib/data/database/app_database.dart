@@ -1,6 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
 import 'package:sqflite/sqflite.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 class AppDatabase {
   AppDatabase._();
@@ -32,6 +34,9 @@ class AppDatabase {
       onCreate: (database, version) async {
         await _createWorkDayTable(database);
         await _createSettingsTable(database);
+        if (useLocalSeed) {
+          await _applyLocalSeed(database);
+        }
       },
       onUpgrade: (database, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -44,16 +49,65 @@ class AppDatabase {
       },
     );
 
-    if (useLocalSeed) {
-      await _applyLocalSeed(_database!);
+    return _database!;
+  }
+
+  static Future<String> databaseFilePath() async {
+    final databasePath = await getDatabasesPath();
+    return path.join(databasePath, databaseName);
+  }
+
+  static Future<File> exportBackupFile() async {
+    final database = await instance;
+    final sourcePath = await databaseFilePath();
+    final tempDirectory = await getTemporaryDirectory();
+    final fileName = _buildBackupFileName();
+    final backupFile = File(path.join(tempDirectory.path, fileName));
+
+    await backupFile.parent.create(recursive: true);
+    if (await backupFile.exists()) {
+      await backupFile.delete();
     }
 
-    return _database!;
+    await File(sourcePath).copy(backupFile.path);
+    await database.close();
+    _database = null;
+
+    return backupFile;
+  }
+
+  static Future<void> importBackupFile(String sourcePath) async {
+    final currentDatabase = _database;
+    if (currentDatabase != null && currentDatabase.isOpen) {
+      await currentDatabase.close();
+    }
+    _database = null;
+
+    final targetPath = await databaseFilePath();
+    final targetFile = File(targetPath);
+    if (await targetFile.exists()) {
+      await targetFile.delete();
+    }
+
+    await File(sourcePath).copy(targetPath);
+    await instance;
   }
 
   static Future<void> _applyLocalSeed(Database database) async {
     final seedSql = await rootBundle.loadString(localSeedAssetPath);
     await database.execute(seedSql);
+  }
+
+  static String _buildBackupFileName() {
+    final now = DateTime.now();
+    final year = now.year.toString().padLeft(4, '0');
+    final month = now.month.toString().padLeft(2, '0');
+    final day = now.day.toString().padLeft(2, '0');
+    final hour = now.hour.toString().padLeft(2, '0');
+    final minute = now.minute.toString().padLeft(2, '0');
+    final second = now.second.toString().padLeft(2, '0');
+
+    return 'ponto_eletronico-backup-$year$month$day-$hour$minute$second.db';
   }
 
   static Future<void> _createWorkDayTable(Database database) async {

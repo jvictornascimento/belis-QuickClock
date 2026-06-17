@@ -1,13 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:ponto_eletronico/data/repositories/settings_repository.dart';
+import 'package:ponto_eletronico/data/repositories/database_backup_repository.dart';
 import 'package:ponto_eletronico/models/app_settings.dart';
 import 'package:ponto_eletronico/shared/money/money_formatter.dart';
+import 'package:share_plus/share_plus.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key, this.settingsRepository});
+  const SettingsPage({
+    super.key,
+    this.settingsRepository,
+    this.backupRepository,
+    this.pickBackupFilePath,
+    this.shareBackupFile,
+  });
 
   final SettingsRepository? settingsRepository;
+  final DatabaseBackupRepository? backupRepository;
+  final Future<String?> Function()? pickBackupFilePath;
+  final Future<void> Function(String filePath)? shareBackupFile;
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -15,17 +27,20 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   late final SettingsRepository _settingsRepository;
+  late final DatabaseBackupRepository _backupRepository;
   late final TextEditingController _halfDayValueController;
 
   AppSettings? _settings;
   bool _isLoading = true;
   bool _isSaving = false;
+  bool _isBackingUp = false;
   String? _message;
 
   @override
   void initState() {
     super.initState();
     _settingsRepository = widget.settingsRepository ?? SettingsRepository();
+    _backupRepository = widget.backupRepository ?? DatabaseBackupRepository();
     _halfDayValueController = TextEditingController();
     _loadSettings();
   }
@@ -110,6 +125,80 @@ class _SettingsPageState extends State<SettingsPage> {
     await _saveSettings(
       currentSettings.copyWith(halfDayValueCents: valueCents),
     );
+  }
+
+  Future<void> _exportBackup() async {
+    setState(() {
+      _isBackingUp = true;
+      _message = null;
+    });
+
+    try {
+      final backupFile = await _backupRepository.exportBackup();
+      await (widget.shareBackupFile ?? _shareBackupFile)(backupFile.path);
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isBackingUp = false;
+        _message = 'Backup exportado.';
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isBackingUp = false;
+        _message = 'Nao foi possivel exportar o backup.';
+      });
+    }
+  }
+
+  Future<void> _importBackup() async {
+    setState(() {
+      _isBackingUp = true;
+      _message = null;
+    });
+
+    try {
+      final selectedPath = await (widget.pickBackupFilePath ?? _pickBackupFilePath)();
+      if (selectedPath == null) {
+        if (!mounted) {
+          return;
+        }
+
+        setState(() {
+          _isBackingUp = false;
+          _message = 'Importacao cancelada.';
+        });
+
+        return;
+      }
+
+      await _backupRepository.importBackup(selectedPath);
+      await _loadSettings();
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isBackingUp = false;
+        _message = 'Backup importado.';
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isBackingUp = false;
+        _message = 'Nao foi possivel importar o backup.';
+      });
+    }
   }
 
   Future<void> _toggleWorkday(int weekday) async {
@@ -201,9 +290,43 @@ class _SettingsPageState extends State<SettingsPage> {
                       SizedBox(
                         height: 56,
                         child: FilledButton(
-                          onPressed: _isSaving ? null : _saveHalfDayValue,
-                          child: Text(_isSaving ? 'Salvando...' : 'Salvar'),
+                          onPressed: (_isSaving || _isBackingUp)
+                              ? null
+                              : _saveHalfDayValue,
+                          child: Text(
+                            _isSaving ? 'Salvando...' : 'Salvar',
+                          ),
                         ),
+                      ),
+                      const SizedBox(height: 32),
+                      Text(
+                        'Backup',
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: _isLoading || _isSaving || _isBackingUp
+                                  ? null
+                                  : _exportBackup,
+                              icon: const Icon(Icons.upload),
+                              label: const Text('Exportar'),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: _isLoading || _isSaving || _isBackingUp
+                                  ? null
+                                  : _importBackup,
+                              icon: const Icon(Icons.download),
+                              label: const Text('Importar'),
+                            ),
+                          ),
+                        ],
                       ),
                       if (_message != null) ...[
                         const SizedBox(height: 16),
@@ -216,6 +339,25 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
   }
+}
+
+Future<String?> _pickBackupFilePath() async {
+  final result = await FilePicker.platform.pickFiles(
+    type: FileType.custom,
+    allowedExtensions: const ['db'],
+    allowMultiple: false,
+  );
+
+  return result?.files.single.path;
+}
+
+Future<void> _shareBackupFile(String filePath) async {
+  await SharePlus.instance.share(
+    ShareParams(
+      files: [XFile(filePath)],
+      text: 'Backup do banco de dados',
+    ),
+  );
 }
 
 class DayOption {

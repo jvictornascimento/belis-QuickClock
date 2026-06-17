@@ -179,14 +179,17 @@ class _HomePageState extends State<HomePage> {
           ),
           IconButton(
             tooltip: 'Configuracoes',
-            onPressed: () {
-              Navigator.of(context).push(
+            onPressed: () async {
+              await Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (_) => SettingsPage(
                     settingsRepository: widget.settingsRepository,
                   ),
                 ),
               );
+              if (mounted) {
+                await _loadState();
+              }
             },
             icon: const Icon(Icons.settings),
           ),

@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ponto_eletronico/data/repositories/database_backup_repository.dart';
 import 'package:ponto_eletronico/data/repositories/settings_repository.dart';
 import 'package:ponto_eletronico/features/settings/presentation/settings_page.dart';
 import 'package:ponto_eletronico/models/app_settings.dart';
@@ -16,6 +19,7 @@ void main() {
               activeSunday: false,
             ),
           ),
+          backupRepository: FakeBackupRepository(),
         ),
       ),
     );
@@ -27,13 +31,20 @@ void main() {
     expect(find.text('Seg'), findsOneWidget);
     expect(find.text('Sab'), findsOneWidget);
     expect(find.text('Dom'), findsOneWidget);
+    expect(find.text('Exportar'), findsOneWidget);
+    expect(find.text('Importar'), findsOneWidget);
   });
 
   testWidgets('toggles workday and saves the value', (tester) async {
     final repository = FakeSettingsRepository();
 
     await tester.pumpWidget(
-      MaterialApp(home: SettingsPage(settingsRepository: repository)),
+      MaterialApp(
+        home: SettingsPage(
+          settingsRepository: repository,
+          backupRepository: FakeBackupRepository(),
+        ),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -49,6 +60,36 @@ void main() {
 
     expect(repository.savedSettings?.halfDayValueCents, 12050);
     expect(find.text('Configuracao salva.'), findsOneWidget);
+  });
+
+  testWidgets('exports and imports the backup file', (tester) async {
+    final backupRepository = FakeBackupRepository(
+      exportPath: '/tmp/ponto_eletronico-backup.db',
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SettingsPage(
+          settingsRepository: FakeSettingsRepository(),
+          backupRepository: backupRepository,
+          pickBackupFilePath: () async => '/tmp/imported-ponto.db',
+          shareBackupFile: (_) async {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Exportar'));
+    await tester.pumpAndSettle();
+
+    expect(backupRepository.exported, isTrue);
+    expect(find.text('Backup exportado.'), findsOneWidget);
+
+    await tester.tap(find.text('Importar'));
+    await tester.pumpAndSettle();
+
+    expect(backupRepository.importedPath, '/tmp/imported-ponto.db');
+    expect(find.text('Backup importado.'), findsOneWidget);
   });
 }
 
@@ -69,5 +110,26 @@ class FakeSettingsRepository extends SettingsRepository {
     _settings = settings;
 
     return settings;
+  }
+}
+
+class FakeBackupRepository extends DatabaseBackupRepository {
+  FakeBackupRepository({this.exportPath = '/tmp/backup.db'})
+    : super();
+
+  final String exportPath;
+
+  bool exported = false;
+  String? importedPath;
+
+  @override
+  Future<File> exportBackup() async {
+    exported = true;
+    return File(exportPath);
+  }
+
+  @override
+  Future<void> importBackup(String sourcePath) async {
+    importedPath = sourcePath;
   }
 }
