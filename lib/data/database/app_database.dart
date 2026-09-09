@@ -1,19 +1,22 @@
+import 'dart:io';
+
 import 'package:flutter/services.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:path/path.dart' as path;
 import 'package:sqflite/sqflite.dart';
-import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 class AppDatabase {
   AppDatabase._();
 
   static const databaseName = 'ponto_eletronico.db';
-  static const databaseVersion = 3;
+  static const databaseVersion = 4;
   static const localSeedAssetPath = 'local_seed/initial_work_days.sql';
   static const useLocalSeed = bool.fromEnvironment('LOCAL_SEED_WORK_DAYS');
 
   static const workDayTable = 'work_day';
   static const settingsTable = 'settings';
+  static const additionalServiceTable = 'additional_service';
 
   static Database? _database;
 
@@ -34,6 +37,7 @@ class AppDatabase {
       onCreate: (database, version) async {
         await _createWorkDayTable(database);
         await _createSettingsTable(database);
+        await _createAdditionalServiceTable(database);
         if (useLocalSeed) {
           await _applyLocalSeed(database);
         }
@@ -45,6 +49,10 @@ class AppDatabase {
 
         if (oldVersion < 3 && oldVersion >= 2) {
           await _addWorkScheduleColumns(database);
+        }
+
+        if (oldVersion < 4) {
+          await _createAdditionalServiceTable(database);
         }
       },
     );
@@ -76,7 +84,7 @@ class AppDatabase {
     return backupFile;
   }
 
-  static Future<void> importBackupFile(String sourcePath) async {
+  static Future<void> importBackupFile(XFile sourceFile) async {
     final currentDatabase = _database;
     if (currentDatabase != null && currentDatabase.isOpen) {
       await currentDatabase.close();
@@ -89,7 +97,8 @@ class AppDatabase {
       await targetFile.delete();
     }
 
-    await File(sourcePath).copy(targetPath);
+    final bytes = await sourceFile.readAsBytes();
+    await targetFile.writeAsBytes(bytes, flush: true);
     await instance;
   }
 
@@ -135,6 +144,19 @@ class AppDatabase {
         active_friday INTEGER NOT NULL DEFAULT 1 CHECK (active_friday IN (0, 1)),
         active_saturday INTEGER NOT NULL DEFAULT 0 CHECK (active_saturday IN (0, 1)),
         active_sunday INTEGER NOT NULL DEFAULT 0 CHECK (active_sunday IN (0, 1)),
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+  }
+
+  static Future<void> _createAdditionalServiceTable(Database database) async {
+    await database.execute('''
+      CREATE TABLE IF NOT EXISTS $additionalServiceTable (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL,
+        description TEXT NOT NULL,
+        value_cents INTEGER NOT NULL DEFAULT 0 CHECK (value_cents >= 0),
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
       )

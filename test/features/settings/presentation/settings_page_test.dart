@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:ponto_eletronico/data/repositories/database_backup_repository.dart';
 import 'package:ponto_eletronico/data/repositories/settings_repository.dart';
 import 'package:ponto_eletronico/features/settings/presentation/settings_page.dart';
@@ -72,7 +73,7 @@ void main() {
         home: SettingsPage(
           settingsRepository: FakeSettingsRepository(),
           backupRepository: backupRepository,
-          pickBackupFilePath: () async => '/tmp/imported-ponto.db',
+          pickBackupFile: () async => XFile('/tmp/imported-ponto.db'),
           shareBackupFile: (_) async {},
         ),
       ),
@@ -88,7 +89,7 @@ void main() {
     await tester.tap(find.text('Importar'));
     await tester.pumpAndSettle();
 
-    expect(backupRepository.importedPath, '/tmp/imported-ponto.db');
+    expect(backupRepository.importedPath?.path, '/tmp/imported-ponto.db');
     expect(find.text('Backup importado.'), findsOneWidget);
   });
 }
@@ -114,13 +115,12 @@ class FakeSettingsRepository extends SettingsRepository {
 }
 
 class FakeBackupRepository extends DatabaseBackupRepository {
-  FakeBackupRepository({this.exportPath = '/tmp/backup.db'})
-    : super();
+  FakeBackupRepository({this.exportPath = '/tmp/backup.db'}) : super();
 
   final String exportPath;
 
   bool exported = false;
-  String? importedPath;
+  XFile? importedPath;
 
   @override
   Future<File> exportBackup() async {
@@ -129,7 +129,7 @@ class FakeBackupRepository extends DatabaseBackupRepository {
   }
 
   @override
-  Future<void> importBackup(String sourcePath) async {
-    importedPath = sourcePath;
+  Future<void> importBackup(XFile sourceFile) async {
+    importedPath = sourceFile;
   }
 }

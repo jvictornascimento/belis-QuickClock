@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ponto_eletronico/data/repositories/additional_service_repository.dart';
 import 'package:ponto_eletronico/data/repositories/settings_repository.dart';
 import 'package:ponto_eletronico/data/repositories/work_day_repository.dart';
 import 'package:ponto_eletronico/features/report/presentation/month_report_page.dart';
 import 'package:ponto_eletronico/models/app_settings.dart';
+import 'package:ponto_eletronico/models/additional_service.dart';
 import 'package:ponto_eletronico/models/work_day.dart';
 
 void main() {
@@ -17,6 +19,9 @@ void main() {
               _workDay('2026-06-17', before: true, after: true),
             ],
           ),
+          additionalServiceRepository: FakeAdditionalServiceRepository(
+            monthResults: [_service('2026-06-17', 'Instalacao extra', 5000)],
+          ),
           settingsRepository: FakeSettingsRepository(valueCents: 8000),
         ),
       ),
@@ -28,10 +33,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('2026-06-16'), findsOneWidget);
-    expect(find.text('2026-06-17'), findsOneWidget);
     expect(find.text('Dias trabalhados: 2'), findsOneWidget);
     expect(find.text('Periodos: 3'), findsOneWidget);
-    expect(find.text('Total: R\$ 240,00'), findsOneWidget);
+    expect(find.text('Pontos: R\$ 240,00'), findsOneWidget);
+    await tester.drag(find.byType(ListView), const Offset(0, -240));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Servicos adicionais'), findsOneWidget);
+    expect(find.text('Instalacao extra'), findsOneWidget);
+    expect(find.text('Servicos adicionais: R\$ 50,00'), findsOneWidget);
+    expect(find.text('Total: R\$ 290,00'), findsOneWidget);
     expect(find.text('Visualizar PDF'), findsOneWidget);
     expect(find.text('Compartilhar PDF'), findsOneWidget);
   });
@@ -45,6 +56,17 @@ class FakeWorkDayRepository extends WorkDayRepository {
 
   @override
   Future<List<WorkDay>> findMarkedByMonth(String month) async => monthResults;
+}
+
+class FakeAdditionalServiceRepository extends AdditionalServiceRepository {
+  FakeAdditionalServiceRepository({this.monthResults = const []})
+    : super(databaseProvider: () => throw StateError('Database not used.'));
+
+  final List<AdditionalService> monthResults;
+
+  @override
+  Future<List<AdditionalService>> findByMonth(String month) async =>
+      monthResults;
 }
 
 class FakeSettingsRepository extends SettingsRepository {
@@ -70,6 +92,19 @@ class FakeSettingsRepository extends SettingsRepository {
       updatedAt: now,
     );
   }
+}
+
+AdditionalService _service(String date, String description, int valueCents) {
+  final now = DateTime(2026, 6, 16);
+
+  return AdditionalService(
+    id: 1,
+    date: date,
+    description: description,
+    valueCents: valueCents,
+    createdAt: now,
+    updatedAt: now,
+  );
 }
 
 WorkDay _workDay(String date, {bool before = false, bool after = false}) {

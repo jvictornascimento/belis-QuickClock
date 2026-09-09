@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:ponto_eletronico/data/repositories/settings_repository.dart';
 import 'package:ponto_eletronico/data/repositories/database_backup_repository.dart';
 import 'package:ponto_eletronico/models/app_settings.dart';
@@ -12,13 +12,13 @@ class SettingsPage extends StatefulWidget {
     super.key,
     this.settingsRepository,
     this.backupRepository,
-    this.pickBackupFilePath,
+    this.pickBackupFile,
     this.shareBackupFile,
   });
 
   final SettingsRepository? settingsRepository;
   final DatabaseBackupRepository? backupRepository;
-  final Future<String?> Function()? pickBackupFilePath;
+  final Future<XFile?> Function()? pickBackupFile;
   final Future<void> Function(String filePath)? shareBackupFile;
 
   @override
@@ -164,8 +164,8 @@ class _SettingsPageState extends State<SettingsPage> {
     });
 
     try {
-      final selectedPath = await (widget.pickBackupFilePath ?? _pickBackupFilePath)();
-      if (selectedPath == null) {
+      final selectedFile = await (widget.pickBackupFile ?? _pickBackupFile)();
+      if (selectedFile == null) {
         if (!mounted) {
           return;
         }
@@ -178,7 +178,7 @@ class _SettingsPageState extends State<SettingsPage> {
         return;
       }
 
-      await _backupRepository.importBackup(selectedPath);
+      await _backupRepository.importBackup(selectedFile);
       await _loadSettings();
 
       if (!mounted) {
@@ -207,25 +207,34 @@ class _SettingsPageState extends State<SettingsPage> {
       return;
     }
 
-    final valueCents = MoneyFormatter.parseToCents(_halfDayValueController.text);
+    final valueCents = MoneyFormatter.parseToCents(
+      _halfDayValueController.text,
+    );
 
     await _saveSettings(
       currentSettings.copyWith(
         halfDayValueCents: valueCents,
-        activeMonday:
-            weekday == DateTime.monday ? !currentSettings.activeMonday : currentSettings.activeMonday,
-        activeTuesday:
-            weekday == DateTime.tuesday ? !currentSettings.activeTuesday : currentSettings.activeTuesday,
-        activeWednesday:
-            weekday == DateTime.wednesday ? !currentSettings.activeWednesday : currentSettings.activeWednesday,
-        activeThursday:
-            weekday == DateTime.thursday ? !currentSettings.activeThursday : currentSettings.activeThursday,
-        activeFriday:
-            weekday == DateTime.friday ? !currentSettings.activeFriday : currentSettings.activeFriday,
-        activeSaturday:
-            weekday == DateTime.saturday ? !currentSettings.activeSaturday : currentSettings.activeSaturday,
-        activeSunday:
-            weekday == DateTime.sunday ? !currentSettings.activeSunday : currentSettings.activeSunday,
+        activeMonday: weekday == DateTime.monday
+            ? !currentSettings.activeMonday
+            : currentSettings.activeMonday,
+        activeTuesday: weekday == DateTime.tuesday
+            ? !currentSettings.activeTuesday
+            : currentSettings.activeTuesday,
+        activeWednesday: weekday == DateTime.wednesday
+            ? !currentSettings.activeWednesday
+            : currentSettings.activeWednesday,
+        activeThursday: weekday == DateTime.thursday
+            ? !currentSettings.activeThursday
+            : currentSettings.activeThursday,
+        activeFriday: weekday == DateTime.friday
+            ? !currentSettings.activeFriday
+            : currentSettings.activeFriday,
+        activeSaturday: weekday == DateTime.saturday
+            ? !currentSettings.activeSaturday
+            : currentSettings.activeSaturday,
+        activeSunday: weekday == DateTime.sunday
+            ? !currentSettings.activeSunday
+            : currentSettings.activeSunday,
       ),
       message: 'Expediente salvo.',
     );
@@ -259,7 +268,8 @@ class _SettingsPageState extends State<SettingsPage> {
                           for (final option in _weekdayOptions)
                             DayToggleButton(
                               label: option.label,
-                              selected: settings?.isActiveWeekday(option.weekday) ??
+                              selected:
+                                  settings?.isActiveWeekday(option.weekday) ??
                                   false,
                               enabled: !_isSaving,
                               onTap: () => _toggleWorkday(option.weekday),
@@ -293,9 +303,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           onPressed: (_isSaving || _isBackingUp)
                               ? null
                               : _saveHalfDayValue,
-                          child: Text(
-                            _isSaving ? 'Salvando...' : 'Salvar',
-                          ),
+                          child: Text(_isSaving ? 'Salvando...' : 'Salvar'),
                         ),
                       ),
                       const SizedBox(height: 32),
@@ -341,22 +349,17 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 }
 
-Future<String?> _pickBackupFilePath() async {
-  final result = await FilePicker.platform.pickFiles(
-    type: FileType.custom,
-    allowedExtensions: const ['db'],
-    allowMultiple: false,
+Future<XFile?> _pickBackupFile() async {
+  return openFile(
+    acceptedTypeGroups: const [
+      XTypeGroup(label: 'SQLite backup', extensions: ['db']),
+    ],
   );
-
-  return result?.files.single.path;
 }
 
 Future<void> _shareBackupFile(String filePath) async {
   await SharePlus.instance.share(
-    ShareParams(
-      files: [XFile(filePath)],
-      text: 'Backup do banco de dados',
-    ),
+    ShareParams(files: [XFile(filePath)], text: 'Backup do banco de dados'),
   );
 }
 

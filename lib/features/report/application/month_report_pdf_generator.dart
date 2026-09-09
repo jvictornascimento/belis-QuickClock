@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:ponto_eletronico/features/report/domain/month_report.dart';
+import 'package:ponto_eletronico/models/additional_service.dart';
 import 'package:ponto_eletronico/models/work_day.dart';
 import 'package:ponto_eletronico/shared/money/money_formatter.dart';
 
@@ -28,6 +29,10 @@ class MonthReportPdfGenerator {
             pw.Text(report.month, style: const pw.TextStyle(fontSize: 14)),
             pw.SizedBox(height: 24),
             _buildTable(report.workDays),
+            if (report.additionalServices.isNotEmpty) ...[
+              pw.SizedBox(height: 24),
+              _buildAdditionalServicesTable(report.additionalServices),
+            ],
             pw.SizedBox(height: 24),
             _buildSummary(report),
           ];
@@ -56,6 +61,36 @@ class MonthReportPdfGenerator {
     );
   }
 
+  pw.Widget _buildAdditionalServicesTable(
+    List<AdditionalService> additionalServices,
+  ) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(
+          'Servicos adicionais',
+          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+        ),
+        pw.SizedBox(height: 8),
+        pw.TableHelper.fromTextArray(
+          border: pw.TableBorder.all(color: PdfColors.grey300),
+          headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
+          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          cellAlignment: pw.Alignment.centerLeft,
+          cellPadding: const pw.EdgeInsets.all(8),
+          headers: const ['Data', 'Descricao', 'Valor'],
+          data: additionalServices.map((service) {
+            return [
+              service.date,
+              service.description,
+              MoneyFormatter.formatCents(service.valueCents),
+            ];
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
   pw.Widget _buildSummary(MonthReport report) {
     return pw.Container(
       padding: const pw.EdgeInsets.all(12),
@@ -72,6 +107,13 @@ class MonthReportPdfGenerator {
           pw.SizedBox(height: 8),
           pw.Text('Dias trabalhados: ${report.workedDays}'),
           pw.Text('Periodos: ${report.workedPeriods}'),
+          pw.Text(
+            'Pontos: ${MoneyFormatter.formatCents(report.workDaysValueCents)}',
+          ),
+          if (report.additionalServices.isNotEmpty)
+            pw.Text(
+              'Servicos adicionais: ${MoneyFormatter.formatCents(report.additionalServicesValueCents)}',
+            ),
           pw.Text(
             'Total: ${MoneyFormatter.formatCents(report.totalValueCents)}',
           ),

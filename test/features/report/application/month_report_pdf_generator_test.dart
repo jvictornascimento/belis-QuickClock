@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ponto_eletronico/features/report/application/month_report_pdf_generator.dart';
 import 'package:ponto_eletronico/features/report/domain/month_report.dart';
+import 'package:ponto_eletronico/models/additional_service.dart';
 import 'package:ponto_eletronico/models/work_day.dart';
 
 void main() {
@@ -14,6 +15,7 @@ void main() {
           _workDay('2026-06-16', before: true),
           _workDay('2026-06-17', before: true, after: true),
         ],
+        additionalServices: [_service('2026-06-17', 5000)],
       ),
     );
 
@@ -30,6 +32,19 @@ WorkDay _workDay(String date, {bool before = false, bool after = false}) {
     date: date,
     workedBeforeLunch: before,
     workedAfterLunch: after,
+    createdAt: now,
+    updatedAt: now,
+  );
+}
+
+AdditionalService _service(String date, int valueCents) {
+  final now = DateTime(2026, 6, 16);
+
+  return AdditionalService(
+    id: 1,
+    date: date,
+    description: 'Servico extra',
+    valueCents: valueCents,
     createdAt: now,
     updatedAt: now,
   );

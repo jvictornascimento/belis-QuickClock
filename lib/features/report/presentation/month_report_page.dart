@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:ponto_eletronico/data/repositories/additional_service_repository.dart';
 import 'package:ponto_eletronico/data/repositories/settings_repository.dart';
 import 'package:ponto_eletronico/data/repositories/work_day_repository.dart';
 import 'package:ponto_eletronico/features/report/application/month_report_pdf_generator.dart';
 import 'package:ponto_eletronico/features/report/domain/month_report.dart';
 import 'package:ponto_eletronico/features/report/presentation/month_report_pdf_preview_page.dart';
+import 'package:ponto_eletronico/models/additional_service.dart';
 import 'package:ponto_eletronico/models/work_day.dart';
 import 'package:ponto_eletronico/shared/money/money_formatter.dart';
 import 'package:printing/printing.dart';
@@ -13,11 +15,13 @@ class MonthReportPage extends StatefulWidget {
     super.key,
     this.workDayRepository,
     this.settingsRepository,
+    this.additionalServiceRepository,
     this.pdfGenerator = const MonthReportPdfGenerator(),
   });
 
   final WorkDayRepository? workDayRepository;
   final SettingsRepository? settingsRepository;
+  final AdditionalServiceRepository? additionalServiceRepository;
   final MonthReportPdfGenerator pdfGenerator;
 
   @override
@@ -27,6 +31,7 @@ class MonthReportPage extends StatefulWidget {
 class _MonthReportPageState extends State<MonthReportPage> {
   late final WorkDayRepository _workDayRepository;
   late final SettingsRepository _settingsRepository;
+  late final AdditionalServiceRepository _additionalServiceRepository;
   late final TextEditingController _monthController;
 
   bool _isLoading = false;
@@ -39,6 +44,8 @@ class _MonthReportPageState extends State<MonthReportPage> {
     super.initState();
     _workDayRepository = widget.workDayRepository ?? WorkDayRepository();
     _settingsRepository = widget.settingsRepository ?? SettingsRepository();
+    _additionalServiceRepository =
+        widget.additionalServiceRepository ?? AdditionalServiceRepository();
     _monthController = TextEditingController(text: _currentMonth());
     _loadReport();
   }
@@ -120,6 +127,9 @@ class _MonthReportPageState extends State<MonthReportPage> {
 
     final settings = await _settingsRepository.getSettings();
     final workDays = await _workDayRepository.findMarkedByMonth(month);
+    final additionalServices = await _additionalServiceRepository.findByMonth(
+      month,
+    );
 
     if (!mounted) {
       return;
@@ -130,9 +140,12 @@ class _MonthReportPageState extends State<MonthReportPage> {
       _report = MonthReport(
         month: month,
         workDays: workDays,
+        additionalServices: additionalServices,
         halfDayValueCents: settings.halfDayValueCents,
       );
-      _message = workDays.isEmpty ? 'Nenhum ponto marcado nesse mes.' : null;
+      _message = workDays.isEmpty && additionalServices.isEmpty
+          ? 'Nenhum registro nesse mes.'
+          : null;
     });
   }
 
@@ -170,7 +183,9 @@ class _MonthReportPageState extends State<MonthReportPage> {
                   Text(_message!, textAlign: TextAlign.center),
                   const SizedBox(height: 16),
                 ],
-                if (report != null && report.workDays.isNotEmpty)
+                if (report != null &&
+                    (report.workDays.isNotEmpty ||
+                        report.additionalServices.isNotEmpty))
                   Expanded(
                     child: MonthReportView(
                       report: report,
@@ -224,16 +239,38 @@ class MonthReportView extends StatelessWidget {
         const SizedBox(height: 12),
         Expanded(
           child: ListView.separated(
-            itemCount: report.workDays.length,
+            itemCount:
+                report.workDays.length +
+                (report.additionalServices.isEmpty
+                    ? 0
+                    : report.additionalServices.length + 1),
             separatorBuilder: (context, index) => const Divider(height: 1),
             itemBuilder: (context, index) {
-              return MonthReportTile(workDay: report.workDays[index]);
+              if (index < report.workDays.length) {
+                return MonthReportTile(workDay: report.workDays[index]);
+              }
+
+              if (index == report.workDays.length) {
+                return AdditionalServicesSummary(report: report);
+              }
+
+              final serviceIndex = index - report.workDays.length - 1;
+              return AdditionalServiceReportTile(
+                service: report.additionalServices[serviceIndex],
+              );
             },
           ),
         ),
         const SizedBox(height: 16),
         Text('Dias trabalhados: ${report.workedDays}'),
         Text('Periodos: ${report.workedPeriods}'),
+        Text(
+          'Pontos: ${MoneyFormatter.formatCents(report.workDaysValueCents)}',
+        ),
+        if (report.additionalServices.isNotEmpty)
+          Text(
+            'Servicos adicionais: ${MoneyFormatter.formatCents(report.additionalServicesValueCents)}',
+          ),
         Text('Total: ${MoneyFormatter.formatCents(report.totalValueCents)}'),
         const SizedBox(height: 16),
         SizedBox(
@@ -275,4 +312,52 @@ class MonthReportTile extends StatelessWidget {
   }
 
   String _yesNo(bool value) => value ? 'Sim' : 'Nao';
+}
+
+class AdditionalServicesSummary extends StatelessWidget {
+  const AdditionalServicesSummary({super.key, required this.report});
+
+  final MonthReport report;
+
+  @override
+  Widget build(BuildContext context) {
+    if (report.additionalServices.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Servicos adicionais',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Total: ${MoneyFormatter.formatCents(report.additionalServicesValueCents)}',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class AdditionalServiceReportTile extends StatelessWidget {
+  const AdditionalServiceReportTile({super.key, required this.service});
+
+  final AdditionalService service;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(service.description),
+      subtitle: Text(service.date),
+      trailing: Text(MoneyFormatter.formatCents(service.valueCents)),
+    );
+  }
 }

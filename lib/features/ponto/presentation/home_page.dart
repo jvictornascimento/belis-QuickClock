@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:ponto_eletronico/data/repositories/additional_service_repository.dart';
 import 'package:ponto_eletronico/data/repositories/settings_repository.dart';
 import 'package:ponto_eletronico/data/repositories/work_day_repository.dart';
+import 'package:ponto_eletronico/features/additional_services/presentation/additional_services_page.dart';
 import 'package:ponto_eletronico/features/ponto/domain/work_day_edit_policy.dart';
 import 'package:ponto_eletronico/features/report/presentation/month_report_page.dart';
 import 'package:ponto_eletronico/features/search/presentation/search_page.dart';
@@ -13,11 +15,13 @@ class HomePage extends StatefulWidget {
     super.key,
     this.workDayRepository,
     this.settingsRepository,
+    this.additionalServiceRepository,
     this.nowProvider,
   });
 
   final WorkDayRepository? workDayRepository;
   final SettingsRepository? settingsRepository;
+  final AdditionalServiceRepository? additionalServiceRepository;
   final DateTime Function()? nowProvider;
 
   @override
@@ -159,6 +163,8 @@ class _HomePageState extends State<HomePage> {
                   builder: (_) => MonthReportPage(
                     workDayRepository: widget.workDayRepository,
                     settingsRepository: widget.settingsRepository,
+                    additionalServiceRepository:
+                        widget.additionalServiceRepository,
                   ),
                 ),
               );
@@ -192,6 +198,30 @@ class _HomePageState extends State<HomePage> {
               }
             },
             icon: const Icon(Icons.settings),
+          ),
+          PopupMenuButton<HomeMenuAction>(
+            tooltip: 'Menu',
+            onSelected: (action) {
+              switch (action) {
+                case HomeMenuAction.additionalServices:
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => AdditionalServicesPage(
+                        additionalServiceRepository:
+                            widget.additionalServiceRepository,
+                        nowProvider: widget.nowProvider,
+                      ),
+                    ),
+                  );
+                  break;
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: HomeMenuAction.additionalServices,
+                child: Text('Servicos adicionais'),
+              ),
+            ],
           ),
         ],
       ),
@@ -274,6 +304,8 @@ class _HomePageState extends State<HomePage> {
     return 'Autosave ativo';
   }
 }
+
+enum HomeMenuAction { additionalServices }
 
 class PeriodButton extends StatelessWidget {
   const PeriodButton({

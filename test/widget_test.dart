@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ponto_eletronico/data/repositories/additional_service_repository.dart';
 import 'package:ponto_eletronico/data/repositories/settings_repository.dart';
 import 'package:ponto_eletronico/data/repositories/work_day_repository.dart';
 import 'package:ponto_eletronico/main.dart';
 import 'package:ponto_eletronico/models/app_settings.dart';
+import 'package:ponto_eletronico/models/additional_service.dart';
 import 'package:ponto_eletronico/models/work_day.dart';
 
 void main() {
@@ -12,6 +14,7 @@ void main() {
       PontoEletronicoApp(
         workDayRepository: FakeWorkDayRepository(),
         settingsRepository: FakeSettingsRepository(),
+        additionalServiceRepository: FakeAdditionalServiceRepository(),
         nowProvider: () => DateTime(2026, 6, 16),
       ),
     );
@@ -28,12 +31,16 @@ void main() {
       PontoEletronicoApp(
         workDayRepository: FakeWorkDayRepository(),
         settingsRepository: FakeSettingsRepository(),
+        additionalServiceRepository: FakeAdditionalServiceRepository(),
         nowProvider: () => DateTime(2026, 6, 20),
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Hoje não há expediente aproveite sua folga!'), findsOneWidget);
+    expect(
+      find.text('Hoje não há expediente aproveite sua folga!'),
+      findsOneWidget,
+    );
     expect(find.text('Antes do almoco'), findsNothing);
     expect(find.text('Depois do almoco'), findsNothing);
   });
@@ -45,6 +52,7 @@ void main() {
       PontoEletronicoApp(
         workDayRepository: repository,
         settingsRepository: FakeSettingsRepository(),
+        additionalServiceRepository: FakeAdditionalServiceRepository(),
         nowProvider: () => DateTime(2026, 6, 16),
       ),
     );
@@ -74,6 +82,7 @@ void main() {
       PontoEletronicoApp(
         workDayRepository: repository,
         settingsRepository: FakeSettingsRepository(),
+        additionalServiceRepository: FakeAdditionalServiceRepository(),
         nowProvider: () => DateTime(2026, 6, 16),
       ),
     );
@@ -91,6 +100,7 @@ void main() {
       PontoEletronicoApp(
         workDayRepository: FakeWorkDayRepository(),
         settingsRepository: FakeSettingsRepository(),
+        additionalServiceRepository: FakeAdditionalServiceRepository(),
         nowProvider: () => DateTime(2026, 6, 16),
       ),
     );
@@ -108,6 +118,7 @@ void main() {
       PontoEletronicoApp(
         workDayRepository: FakeWorkDayRepository(),
         settingsRepository: FakeSettingsRepository(),
+        additionalServiceRepository: FakeAdditionalServiceRepository(),
         nowProvider: () => DateTime(2026, 6, 16),
       ),
     );
@@ -125,6 +136,7 @@ void main() {
       PontoEletronicoApp(
         workDayRepository: FakeWorkDayRepository(),
         settingsRepository: FakeSettingsRepository(),
+        additionalServiceRepository: FakeAdditionalServiceRepository(),
         nowProvider: () => DateTime(2026, 6, 16),
       ),
     );
@@ -135,6 +147,25 @@ void main() {
 
     expect(find.text('Relatorio mensal'), findsOneWidget);
     expect(find.text('Gerar relatorio'), findsOneWidget);
+  });
+
+  testWidgets('opens additional services from the menu', (tester) async {
+    await tester.pumpWidget(
+      PontoEletronicoApp(
+        workDayRepository: FakeWorkDayRepository(),
+        settingsRepository: FakeSettingsRepository(),
+        additionalServiceRepository: FakeAdditionalServiceRepository(),
+        nowProvider: () => DateTime(2026, 6, 16),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.more_vert));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Servicos adicionais').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Adicionar servico'), findsOneWidget);
   });
 }
 
@@ -173,4 +204,12 @@ class FakeSettingsRepository extends SettingsRepository {
   Future<AppSettings> saveSettings(AppSettings settings) async {
     return settings;
   }
+}
+
+class FakeAdditionalServiceRepository extends AdditionalServiceRepository {
+  FakeAdditionalServiceRepository()
+    : super(databaseProvider: () => throw StateError('Database not used.'));
+
+  @override
+  Future<List<AdditionalService>> findByMonth(String month) async => [];
 }

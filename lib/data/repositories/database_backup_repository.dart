@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:file_selector/file_selector.dart';
 import 'package:ponto_eletronico/data/database/app_database.dart';
 
 class DatabaseBackupRepository {
@@ -7,7 +8,7 @@ class DatabaseBackupRepository {
     return AppDatabase.exportBackupFile();
   }
 
-  Future<void> importBackup(String sourcePath) {
-    return AppDatabase.importBackupFile(sourcePath);
+  Future<void> importBackup(XFile sourceFile) {
+    return AppDatabase.importBackupFile(sourceFile);
   }
 }

@@ -29,20 +29,20 @@ class SettingsRepository {
       throw ArgumentError.value(
         valueCents,
         'valueCents',
-      'Half day value cannot be negative.',
-    );
+        'Half day value cannot be negative.',
+      );
     }
 
     final currentSettings = await getSettings();
-    return saveSettings(currentSettings.copyWith(halfDayValueCents: valueCents));
+    return saveSettings(
+      currentSettings.copyWith(halfDayValueCents: valueCents),
+    );
   }
 
   Future<AppSettings> saveSettings(AppSettings settings) async {
     final database = await _databaseProvider();
     final now = DateTime.now();
-    final valueToSave = settings.copyWith(
-      updatedAt: now,
-    );
+    final valueToSave = settings.copyWith(updatedAt: now);
 
     await database.insert(
       AppDatabase.settingsTable,
