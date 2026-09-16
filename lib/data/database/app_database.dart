@@ -11,7 +11,7 @@ class AppDatabase {
   AppDatabase._();
 
   static const databaseName = 'ponto_eletronico.db';
-  static const databaseVersion = 5;
+  static const databaseVersion = 6;
   static const localSeedAssetPath = 'local_seed/initial_work_days.sql';
   static const useLocalSeed = bool.fromEnvironment('LOCAL_SEED_WORK_DAYS');
 
@@ -47,6 +47,11 @@ class AppDatabase {
         }
       },
       onUpgrade: (database, oldVersion, newVersion) async {
+        if (oldVersion < 5) {
+          await _createCompanyTable(database);
+          await _ensureDefaultCompany(database);
+        }
+
         if (oldVersion < 2) {
           await _createSettingsTable(database);
         }
@@ -59,9 +64,13 @@ class AppDatabase {
           await _createAdditionalServiceTable(database);
         }
 
-        if (oldVersion < 5) {
+        if (oldVersion == 5) {
           await _createCompanyTable(database);
           await _ensureDefaultCompany(database);
+        }
+
+        if (oldVersion >= 2 && oldVersion < 6) {
+          await _migrateSettingsToCompanyScope(database);
         }
       },
     );
@@ -166,7 +175,8 @@ class AppDatabase {
   static Future<void> _createSettingsTable(Database database) async {
     await database.execute('''
       CREATE TABLE $settingsTable (
-        id INTEGER PRIMARY KEY CHECK (id = 1),
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        company_id INTEGER NOT NULL UNIQUE DEFAULT ${Company.defaultCompanyId},
         half_day_value_cents INTEGER NOT NULL DEFAULT 0 CHECK (half_day_value_cents >= 0),
         active_monday INTEGER NOT NULL DEFAULT 1 CHECK (active_monday IN (0, 1)),
         active_tuesday INTEGER NOT NULL DEFAULT 1 CHECK (active_tuesday IN (0, 1)),
@@ -179,6 +189,46 @@ class AppDatabase {
         updated_at TEXT NOT NULL
       )
     ''');
+  }
+
+  static Future<void> _migrateSettingsToCompanyScope(Database database) async {
+    const legacySettingsTable = 'settings_legacy';
+
+    await database.execute(
+      'ALTER TABLE $settingsTable RENAME TO $legacySettingsTable',
+    );
+    await _createSettingsTable(database);
+    await database.execute('''
+      INSERT INTO $settingsTable (
+        id,
+        company_id,
+        half_day_value_cents,
+        active_monday,
+        active_tuesday,
+        active_wednesday,
+        active_thursday,
+        active_friday,
+        active_saturday,
+        active_sunday,
+        created_at,
+        updated_at
+      )
+      SELECT
+        id,
+        ${Company.defaultCompanyId},
+        half_day_value_cents,
+        active_monday,
+        active_tuesday,
+        active_wednesday,
+        active_thursday,
+        active_friday,
+        active_saturday,
+        active_sunday,
+        created_at,
+        updated_at
+      FROM $legacySettingsTable
+    ''');
+    await database.execute('DROP TABLE $legacySettingsTable');
   }
 
   static Future<void> _createAdditionalServiceTable(Database database) async {

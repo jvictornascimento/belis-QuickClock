@@ -1,5 +1,6 @@
 import 'package:quick_clock/data/database/app_database.dart';
 import 'package:quick_clock/models/app_settings.dart';
+import 'package:quick_clock/models/company.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SettingsRepository {
@@ -8,23 +9,28 @@ class SettingsRepository {
 
   final Future<Database> Function() _databaseProvider;
 
-  Future<AppSettings> getSettings() async {
+  Future<AppSettings> getSettings({
+    int companyId = Company.defaultCompanyId,
+  }) async {
     final database = await _databaseProvider();
     final rows = await database.query(
       AppDatabase.settingsTable,
-      where: 'id = ?',
-      whereArgs: [AppSettings.defaultId],
+      where: 'company_id = ?',
+      whereArgs: [companyId],
       limit: 1,
     );
 
     if (rows.isEmpty) {
-      return AppSettings.empty();
+      return AppSettings.empty().copyWith(companyId: companyId);
     }
 
     return AppSettings.fromMap(rows.first);
   }
 
-  Future<AppSettings> saveHalfDayValueCents(int valueCents) async {
+  Future<AppSettings> saveHalfDayValueCents(
+    int valueCents, {
+    int companyId = Company.defaultCompanyId,
+  }) async {
     if (valueCents < 0) {
       throw ArgumentError.value(
         valueCents,
@@ -33,7 +39,7 @@ class SettingsRepository {
       );
     }
 
-    final currentSettings = await getSettings();
+    final currentSettings = await getSettings(companyId: companyId);
     return saveSettings(
       currentSettings.copyWith(halfDayValueCents: valueCents),
     );
@@ -46,10 +52,10 @@ class SettingsRepository {
 
     await database.insert(
       AppDatabase.settingsTable,
-      valueToSave.toMap(),
+      valueToSave.toMap()..remove('id'),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
 
-    return valueToSave;
+    return getSettings(companyId: valueToSave.companyId);
   }
 }

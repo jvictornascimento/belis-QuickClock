@@ -1,12 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quick_clock/models/app_settings.dart';
+import 'package:quick_clock/models/company.dart';
 
 void main() {
   group('AppSettings', () {
-    test('uses one fixed settings row', () {
+    test('uses the default company when no company is provided', () {
       final settings = AppSettings.empty();
 
       expect(settings.id, AppSettings.defaultId);
+      expect(settings.companyId, Company.defaultCompanyId);
       expect(settings.halfDayValueCents, 0);
       expect(settings.activeMonday, isTrue);
       expect(settings.activeSaturday, isFalse);
@@ -30,6 +32,7 @@ void main() {
 
       expect(settings.toMap(), {
         'id': 1,
+        'company_id': Company.defaultCompanyId,
         'half_day_value_cents': 8000,
         'active_monday': 1,
         'active_tuesday': 1,
@@ -46,6 +49,7 @@ void main() {
     test('restores the half day value from a database map', () {
       final settings = AppSettings.fromMap({
         'id': 1,
+        'company_id': Company.defaultCompanyId,
         'half_day_value_cents': 8000,
         'active_monday': 1,
         'active_tuesday': 1,

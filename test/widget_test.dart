@@ -6,6 +6,7 @@ import 'package:quick_clock/data/repositories/work_day_repository.dart';
 import 'package:quick_clock/main.dart';
 import 'package:quick_clock/models/app_settings.dart';
 import 'package:quick_clock/models/additional_service.dart';
+import 'package:quick_clock/models/company.dart';
 import 'package:quick_clock/models/work_day.dart';
 
 void main() {
@@ -196,8 +197,10 @@ class FakeSettingsRepository extends SettingsRepository {
     : super(databaseProvider: () => throw StateError('Database not used.'));
 
   @override
-  Future<AppSettings> getSettings() async {
-    return AppSettings.empty();
+  Future<AppSettings> getSettings({
+    int companyId = Company.defaultCompanyId,
+  }) async {
+    return AppSettings.empty().copyWith(companyId: companyId);
   }
 
   @override
