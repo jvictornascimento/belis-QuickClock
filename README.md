@@ -1,29 +1,60 @@
 # Ponto Eletronico
 
-Mini aplicativo de ponto offline feito em Flutter.
+Mini aplicativo de ponto offline feito em Flutter para controle simples de dias trabalhados.
 
-## Contexto
+## Problema que o projeto resolve
 
-Este projeto resolve uma necessidade pratica de uma empresa onde faco alguns freelas como tecnico em eletronica. Como eu preciso ir presencialmente ate a empresa junto com outro funcionario, criei este app para que eu e meu colega de trabalho possamos conferir melhor quais dias foram trabalhados.
+Eu presto alguns servicos como tecnico em eletronica para uma empresa e preciso ir presencialmente ao local junto com outro funcionario. Na pratica, o controle dos dias trabalhados precisava ser simples, rapido e facil de conferir no fim do mes.
 
-A ideia nao e controlar horario de entrada e saida. O app registra apenas se houve trabalho antes do almoco e/ou depois do almoco. Isso deixa o fluxo simples e suficiente para conferir os dias trabalhados e gerar um relatorio mensal.
+O problema principal nao e controlar horario exato de entrada e saida. O que realmente precisa ser conferido e se houve trabalho antes do almoco, depois do almoco, ou nos dois periodos. Com isso, eu e meu colega conseguimos validar os dias trabalhados sem depender de planilhas soltas, conversas antigas ou anotacoes manuais.
 
-Escolhi Flutter porque eu uso iOS e meu colega usa Android. Assim, o mesmo codigo pode atender os dois ambientes com pouca dependencia de codigo nativo especifico.
+## Como o app resolve
 
-## Funcionalidades
+O app salva tudo em um banco SQLite local, funcionando offline no celular. Na tela inicial existem dois botoes grandes: um para o periodo da manha e outro para o periodo da tarde. Cada botao funciona como um marcador booleano: cinza quando nao trabalhou e vermelho quando trabalhou.
 
-- Dados locais offline.
-- Dois periodos por dia: antes do almoco e depois do almoco.
-- Botoes grandes com autosave na tela inicial.
+O ponto so pode ser alterado no proprio dia, ate 23:59. Dias antigos ficam apenas para consulta, evitando mudancas acidentais depois do fechamento. A tela de configuracao permite definir o valor de meio dia e quais dias da semana tem expediente. Se o dia atual nao for um dia de expediente, o app nao mostra os botoes de ponto e exibe a mensagem de folga.
+
+No relatorio mensal, o app mostra somente as datas que possuem ponto marcado, calcula a quantidade de periodos trabalhados e soma o valor total com base no valor configurado. Tambem e possivel registrar servicos adicionais com data, descricao e valor, que entram no fechamento do mes. O relatorio pode ser visualizado e compartilhado em PDF.
+
+## Funcionalidades atuais
+
+- Registro offline por periodo: manha e tarde.
+- Autosave ao tocar nos botoes da tela inicial.
 - Edicao permitida somente no dia atual.
-- Tela de configuracao para valor de meio dia e dias de expediente.
-- Sabado e domingo podem ficar desativados.
-- Dias sem expediente mostram a mensagem de folga na home.
-- Pesquisa por data ou mes.
-- Relatorio mensal apenas com dias marcados e total em dinheiro.
+- Configuracao do valor de meio dia.
+- Configuracao dos dias da semana com expediente.
+- Pesquisa de dias trabalhados.
+- Cadastro de servicos adicionais.
+- Relatorio mensal limpo, apenas com datas marcadas.
+- Calculo de total mensal com pontos e servicos adicionais.
+- Exportacao e importacao de backup do banco local.
 - Visualizacao e compartilhamento de relatorio em PDF.
 
-## Desenvolvimento
+## Tecnologia
+
+O projeto usa Flutter porque precisa atender Android e iOS com a mesma base de codigo. Hoje o foco de execucao e Android, mas a implementacao deve evitar codigo nativo especifico sempre que possivel para manter o app fiel entre as duas plataformas.
+
+Principais dependencias:
+
+- `sqflite` para banco de dados local.
+- `pdf` e `printing` para gerar e visualizar relatorios.
+- `share_plus` para compartilhar arquivos.
+- `file_selector` para importar backups.
+
+## Estrutura do projeto
+
+```text
+lib/
+  data/          Repositorios e acesso ao banco SQLite
+  features/      Telas e regras por funcionalidade
+  models/        Modelos de dados
+  shared/        Utilitarios reutilizaveis
+test/            Testes automatizados
+android/         Projeto host Android
+local_seed/      Carga local de desenvolvimento
+```
+
+## Comandos de desenvolvimento
 
 Instale as dependencias:
 
@@ -31,21 +62,25 @@ Instale as dependencias:
 flutter pub get
 ```
 
-Rode as verificacoes:
+Execute no dispositivo ou emulador:
+
+```bash
+flutter run
+```
+
+Rode as verificacoes antes de fechar uma branch:
 
 ```bash
 flutter analyze
 flutter test
 ```
 
-Execute em um dispositivo ou emulador Android:
+Gere um APK de release:
 
 ```bash
-flutter run
+flutter build apk --release
 ```
 
-Gere um APK debug:
+## Proximas evolucoes planejadas
 
-```bash
-flutter build apk --debug
-```
+O app deve evoluir para suportar varias empresas. Cada empresa tera seus proprios dias trabalhados, valor de diaria, servicos adicionais e relatorios separados. Tambem esta planejado um fluxo de orcamentos: o orcamento fica salvo como historico, pode ser aprovado depois e, quando aprovado, entra no relatorio do mes correspondente.
