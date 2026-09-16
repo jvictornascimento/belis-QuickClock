@@ -36,10 +36,19 @@ void main() {
     expect(find.text('Dias trabalhados: 2'), findsOneWidget);
     expect(find.text('Periodos: 3'), findsOneWidget);
     expect(find.text('Pontos: R\$ 240,00'), findsOneWidget);
-    await tester.drag(find.byType(ListView), const Offset(0, -240));
-    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Servicos adicionais'),
+      120,
+      scrollable: find.byType(Scrollable).last,
+    );
 
     expect(find.text('Servicos adicionais'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Instalacao extra'),
+      120,
+      scrollable: find.byType(Scrollable).last,
+    );
+
     expect(find.text('Instalacao extra'), findsOneWidget);
     expect(find.text('Servicos adicionais: R\$ 50,00'), findsOneWidget);
     expect(find.text('Total: R\$ 290,00'), findsOneWidget);
