@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:path/path.dart' as path;
-import 'package:ponto_eletronico/models/company.dart';
+import 'package:quick_clock/models/company.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -125,7 +125,7 @@ class AppDatabase {
     final minute = now.minute.toString().padLeft(2, '0');
     final second = now.second.toString().padLeft(2, '0');
 
-    return 'ponto_eletronico-backup-$year$month$day-$hour$minute$second.db';
+    return 'quick_clock-backup-$year$month$day-$hour$minute$second.db';
   }
 
   static Future<void> _createWorkDayTable(Database database) async {

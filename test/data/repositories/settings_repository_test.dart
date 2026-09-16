@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ponto_eletronico/data/repositories/settings_repository.dart';
+import 'package:quick_clock/data/repositories/settings_repository.dart';
 
 void main() {
   group('SettingsRepository', () {

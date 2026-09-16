@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:ponto_eletronico/data/repositories/additional_service_repository.dart';
-import 'package:ponto_eletronico/data/repositories/settings_repository.dart';
-import 'package:ponto_eletronico/data/repositories/work_day_repository.dart';
-import 'package:ponto_eletronico/features/report/application/month_report_pdf_generator.dart';
-import 'package:ponto_eletronico/features/report/domain/month_report.dart';
-import 'package:ponto_eletronico/features/report/presentation/month_report_pdf_preview_page.dart';
-import 'package:ponto_eletronico/models/additional_service.dart';
-import 'package:ponto_eletronico/models/work_day.dart';
-import 'package:ponto_eletronico/shared/money/money_formatter.dart';
+import 'package:quick_clock/data/repositories/additional_service_repository.dart';
+import 'package:quick_clock/data/repositories/settings_repository.dart';
+import 'package:quick_clock/data/repositories/work_day_repository.dart';
+import 'package:quick_clock/features/report/application/month_report_pdf_generator.dart';
+import 'package:quick_clock/features/report/domain/month_report.dart';
+import 'package:quick_clock/features/report/presentation/month_report_pdf_preview_page.dart';
+import 'package:quick_clock/models/additional_service.dart';
+import 'package:quick_clock/models/work_day.dart';
+import 'package:quick_clock/shared/money/money_formatter.dart';
 import 'package:printing/printing.dart';
 
 class MonthReportPage extends StatefulWidget {

@@ -2,10 +2,10 @@ import 'dart:typed_data';
 
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:ponto_eletronico/features/report/domain/month_report.dart';
-import 'package:ponto_eletronico/models/additional_service.dart';
-import 'package:ponto_eletronico/models/work_day.dart';
-import 'package:ponto_eletronico/shared/money/money_formatter.dart';
+import 'package:quick_clock/features/report/domain/month_report.dart';
+import 'package:quick_clock/models/additional_service.dart';
+import 'package:quick_clock/models/work_day.dart';
+import 'package:quick_clock/shared/money/money_formatter.dart';
 
 class MonthReportPdfGenerator {
   const MonthReportPdfGenerator();

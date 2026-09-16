@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ponto_eletronico/data/repositories/additional_service_repository.dart';
-import 'package:ponto_eletronico/data/repositories/settings_repository.dart';
-import 'package:ponto_eletronico/data/repositories/work_day_repository.dart';
-import 'package:ponto_eletronico/main.dart';
-import 'package:ponto_eletronico/models/app_settings.dart';
-import 'package:ponto_eletronico/models/additional_service.dart';
-import 'package:ponto_eletronico/models/work_day.dart';
+import 'package:quick_clock/data/repositories/additional_service_repository.dart';
+import 'package:quick_clock/data/repositories/settings_repository.dart';
+import 'package:quick_clock/data/repositories/work_day_repository.dart';
+import 'package:quick_clock/main.dart';
+import 'package:quick_clock/models/app_settings.dart';
+import 'package:quick_clock/models/additional_service.dart';
+import 'package:quick_clock/models/work_day.dart';
 
 void main() {
   testWidgets('shows the current day period buttons', (tester) async {
     await tester.pumpWidget(
-      PontoEletronicoApp(
+      QuickClockApp(
         workDayRepository: FakeWorkDayRepository(),
         settingsRepository: FakeSettingsRepository(),
         additionalServiceRepository: FakeAdditionalServiceRepository(),
@@ -20,7 +20,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Ponto Eletronico'), findsOneWidget);
+    expect(find.text('QuickClock'), findsOneWidget);
     expect(find.text('Antes do almoco'), findsOneWidget);
     expect(find.text('Depois do almoco'), findsOneWidget);
     expect(find.text('Autosave ativo'), findsOneWidget);
@@ -28,7 +28,7 @@ void main() {
 
   testWidgets('shows no work message on inactive days', (tester) async {
     await tester.pumpWidget(
-      PontoEletronicoApp(
+      QuickClockApp(
         workDayRepository: FakeWorkDayRepository(),
         settingsRepository: FakeSettingsRepository(),
         additionalServiceRepository: FakeAdditionalServiceRepository(),
@@ -49,7 +49,7 @@ void main() {
     final repository = FakeWorkDayRepository();
 
     await tester.pumpWidget(
-      PontoEletronicoApp(
+      QuickClockApp(
         workDayRepository: repository,
         settingsRepository: FakeSettingsRepository(),
         additionalServiceRepository: FakeAdditionalServiceRepository(),
@@ -79,7 +79,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      PontoEletronicoApp(
+      QuickClockApp(
         workDayRepository: repository,
         settingsRepository: FakeSettingsRepository(),
         additionalServiceRepository: FakeAdditionalServiceRepository(),
@@ -97,7 +97,7 @@ void main() {
 
   testWidgets('opens settings from the app bar', (tester) async {
     await tester.pumpWidget(
-      PontoEletronicoApp(
+      QuickClockApp(
         workDayRepository: FakeWorkDayRepository(),
         settingsRepository: FakeSettingsRepository(),
         additionalServiceRepository: FakeAdditionalServiceRepository(),
@@ -115,7 +115,7 @@ void main() {
 
   testWidgets('opens search from the app bar', (tester) async {
     await tester.pumpWidget(
-      PontoEletronicoApp(
+      QuickClockApp(
         workDayRepository: FakeWorkDayRepository(),
         settingsRepository: FakeSettingsRepository(),
         additionalServiceRepository: FakeAdditionalServiceRepository(),
@@ -133,7 +133,7 @@ void main() {
 
   testWidgets('opens report from the app bar', (tester) async {
     await tester.pumpWidget(
-      PontoEletronicoApp(
+      QuickClockApp(
         workDayRepository: FakeWorkDayRepository(),
         settingsRepository: FakeSettingsRepository(),
         additionalServiceRepository: FakeAdditionalServiceRepository(),
@@ -151,7 +151,7 @@ void main() {
 
   testWidgets('opens additional services from the menu', (tester) async {
     await tester.pumpWidget(
-      PontoEletronicoApp(
+      QuickClockApp(
         workDayRepository: FakeWorkDayRepository(),
         settingsRepository: FakeSettingsRepository(),
         additionalServiceRepository: FakeAdditionalServiceRepository(),

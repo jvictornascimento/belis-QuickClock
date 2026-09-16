@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ponto_eletronico/features/report/domain/month_report.dart';
-import 'package:ponto_eletronico/models/additional_service.dart';
-import 'package:ponto_eletronico/models/work_day.dart';
+import 'package:quick_clock/features/report/domain/month_report.dart';
+import 'package:quick_clock/models/additional_service.dart';
+import 'package:quick_clock/models/work_day.dart';
 
 void main() {
   test('counts worked days and periods', () {

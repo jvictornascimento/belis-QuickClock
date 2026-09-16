@@ -1,5 +1,5 @@
-import 'package:ponto_eletronico/models/additional_service.dart';
-import 'package:ponto_eletronico/models/work_day.dart';
+import 'package:quick_clock/models/additional_service.dart';
+import 'package:quick_clock/models/work_day.dart';
 
 class MonthReport {
   const MonthReport({

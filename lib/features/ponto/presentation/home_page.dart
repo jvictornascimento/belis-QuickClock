@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:ponto_eletronico/data/repositories/additional_service_repository.dart';
-import 'package:ponto_eletronico/data/repositories/settings_repository.dart';
-import 'package:ponto_eletronico/data/repositories/work_day_repository.dart';
-import 'package:ponto_eletronico/features/additional_services/presentation/additional_services_page.dart';
-import 'package:ponto_eletronico/features/ponto/domain/work_day_edit_policy.dart';
-import 'package:ponto_eletronico/features/report/presentation/month_report_page.dart';
-import 'package:ponto_eletronico/features/search/presentation/search_page.dart';
-import 'package:ponto_eletronico/features/settings/presentation/settings_page.dart';
-import 'package:ponto_eletronico/models/app_settings.dart';
-import 'package:ponto_eletronico/models/work_day.dart';
+import 'package:quick_clock/data/repositories/additional_service_repository.dart';
+import 'package:quick_clock/data/repositories/settings_repository.dart';
+import 'package:quick_clock/data/repositories/work_day_repository.dart';
+import 'package:quick_clock/features/additional_services/presentation/additional_services_page.dart';
+import 'package:quick_clock/features/ponto/domain/work_day_edit_policy.dart';
+import 'package:quick_clock/features/report/presentation/month_report_page.dart';
+import 'package:quick_clock/features/search/presentation/search_page.dart';
+import 'package:quick_clock/features/settings/presentation/settings_page.dart';
+import 'package:quick_clock/models/app_settings.dart';
+import 'package:quick_clock/models/work_day.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -153,7 +153,7 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ponto Eletronico'),
+        title: const Text('QuickClock'),
         actions: [
           IconButton(
             tooltip: 'Relatorio',

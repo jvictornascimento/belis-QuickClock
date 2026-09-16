@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ponto_eletronico/models/app_settings.dart';
+import 'package:quick_clock/models/app_settings.dart';
 
 void main() {
   group('AppSettings', () {

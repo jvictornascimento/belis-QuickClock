@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ponto_eletronico/data/repositories/additional_service_repository.dart';
-import 'package:ponto_eletronico/features/additional_services/presentation/additional_services_page.dart';
-import 'package:ponto_eletronico/models/additional_service.dart';
+import 'package:quick_clock/data/repositories/additional_service_repository.dart';
+import 'package:quick_clock/features/additional_services/presentation/additional_services_page.dart';
+import 'package:quick_clock/models/additional_service.dart';
 
 void main() {
   testWidgets('shows saved services for the current month', (tester) async {

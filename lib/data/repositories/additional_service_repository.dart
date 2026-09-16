@@ -1,5 +1,5 @@
-import 'package:ponto_eletronico/data/database/app_database.dart';
-import 'package:ponto_eletronico/models/additional_service.dart';
+import 'package:quick_clock/data/database/app_database.dart';
+import 'package:quick_clock/models/additional_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 class AdditionalServiceRepository {

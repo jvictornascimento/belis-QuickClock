@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:file_selector/file_selector.dart';
-import 'package:ponto_eletronico/data/repositories/database_backup_repository.dart';
-import 'package:ponto_eletronico/data/repositories/settings_repository.dart';
-import 'package:ponto_eletronico/features/settings/presentation/settings_page.dart';
-import 'package:ponto_eletronico/models/app_settings.dart';
+import 'package:quick_clock/data/repositories/database_backup_repository.dart';
+import 'package:quick_clock/data/repositories/settings_repository.dart';
+import 'package:quick_clock/features/settings/presentation/settings_page.dart';
+import 'package:quick_clock/models/app_settings.dart';
 
 void main() {
   testWidgets('shows the saved half day value and workdays', (tester) async {
@@ -65,7 +65,7 @@ void main() {
 
   testWidgets('exports and imports the backup file', (tester) async {
     final backupRepository = FakeBackupRepository(
-      exportPath: '/tmp/ponto_eletronico-backup.db',
+      exportPath: '/tmp/quick_clock-backup.db',
     );
 
     await tester.pumpWidget(

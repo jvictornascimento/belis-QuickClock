@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ponto_eletronico/features/ponto/domain/work_day_edit_policy.dart';
+import 'package:quick_clock/features/ponto/domain/work_day_edit_policy.dart';
 
 void main() {
   group('WorkDayEditPolicy', () {

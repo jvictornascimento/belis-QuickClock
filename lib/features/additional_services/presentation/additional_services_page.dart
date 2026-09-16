@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:ponto_eletronico/data/repositories/additional_service_repository.dart';
-import 'package:ponto_eletronico/models/additional_service.dart';
-import 'package:ponto_eletronico/shared/money/money_formatter.dart';
+import 'package:quick_clock/data/repositories/additional_service_repository.dart';
+import 'package:quick_clock/models/additional_service.dart';
+import 'package:quick_clock/shared/money/money_formatter.dart';
 
 class AdditionalServicesPage extends StatefulWidget {
   const AdditionalServicesPage({

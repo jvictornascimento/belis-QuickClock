@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_selector/file_selector.dart';
-import 'package:ponto_eletronico/data/repositories/settings_repository.dart';
-import 'package:ponto_eletronico/data/repositories/database_backup_repository.dart';
-import 'package:ponto_eletronico/models/app_settings.dart';
-import 'package:ponto_eletronico/shared/money/money_formatter.dart';
+import 'package:quick_clock/data/repositories/settings_repository.dart';
+import 'package:quick_clock/data/repositories/database_backup_repository.dart';
+import 'package:quick_clock/models/app_settings.dart';
+import 'package:quick_clock/shared/money/money_formatter.dart';
 import 'package:share_plus/share_plus.dart';
 
 class SettingsPage extends StatefulWidget {

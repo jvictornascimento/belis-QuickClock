@@ -1,4 +1,4 @@
-# Ponto Eletronico
+# QuickClock
 
 Mini aplicativo de ponto offline feito em Flutter para controle simples de dias trabalhados.
 

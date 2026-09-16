@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:ponto_eletronico/data/repositories/additional_service_repository.dart';
-import 'package:ponto_eletronico/data/repositories/settings_repository.dart';
-import 'package:ponto_eletronico/data/repositories/work_day_repository.dart';
-import 'package:ponto_eletronico/features/ponto/presentation/home_page.dart';
+import 'package:quick_clock/data/repositories/additional_service_repository.dart';
+import 'package:quick_clock/data/repositories/settings_repository.dart';
+import 'package:quick_clock/data/repositories/work_day_repository.dart';
+import 'package:quick_clock/features/ponto/presentation/home_page.dart';
 
 void main() {
-  runApp(const PontoEletronicoApp());
+  runApp(const QuickClockApp());
 }
 
-class PontoEletronicoApp extends StatelessWidget {
-  const PontoEletronicoApp({
+class QuickClockApp extends StatelessWidget {
+  const QuickClockApp({
     super.key,
     this.workDayRepository,
     this.settingsRepository,
@@ -25,10 +25,7 @@ class PontoEletronicoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Ponto Eletron'
-          ''
-          ''
-          'ico',
+      title: 'QuickClock',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFC62828)),
         useMaterial3: true,

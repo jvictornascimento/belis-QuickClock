@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ponto_eletronico/shared/money/money_formatter.dart';
+import 'package:quick_clock/shared/money/money_formatter.dart';
 
 void main() {
   group('MoneyFormatter', () {

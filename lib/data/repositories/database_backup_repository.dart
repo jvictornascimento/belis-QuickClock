@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:file_selector/file_selector.dart';
-import 'package:ponto_eletronico/data/database/app_database.dart';
+import 'package:quick_clock/data/database/app_database.dart';
 
 class DatabaseBackupRepository {
   Future<File> exportBackup() {

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ponto_eletronico/models/company.dart';
+import 'package:quick_clock/models/company.dart';
 
 void main() {
   group('Company', () {

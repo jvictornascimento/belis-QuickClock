@@ -1,5 +1,5 @@
-import 'package:ponto_eletronico/data/database/app_database.dart';
-import 'package:ponto_eletronico/models/work_day.dart';
+import 'package:quick_clock/data/database/app_database.dart';
+import 'package:quick_clock/models/work_day.dart';
 import 'package:sqflite/sqflite.dart';
 
 class WorkDayRepository {
