@@ -51,9 +51,14 @@ work_day
 
 settings
   id
+  company_id
   half_day_value_cents
   updated_at
 ```
+
+Settings are scoped by company. Existing databases keep their current settings
+under the default company during migration, and new companies start with the
+default Monday-to-Friday schedule.
 
 ## Screens
 
