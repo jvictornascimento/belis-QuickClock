@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:path/path.dart' as path;
+import 'package:ponto_eletronico/models/company.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -10,10 +11,11 @@ class AppDatabase {
   AppDatabase._();
 
   static const databaseName = 'ponto_eletronico.db';
-  static const databaseVersion = 4;
+  static const databaseVersion = 5;
   static const localSeedAssetPath = 'local_seed/initial_work_days.sql';
   static const useLocalSeed = bool.fromEnvironment('LOCAL_SEED_WORK_DAYS');
 
+  static const companyTable = 'company';
   static const workDayTable = 'work_day';
   static const settingsTable = 'settings';
   static const additionalServiceTable = 'additional_service';
@@ -35,6 +37,8 @@ class AppDatabase {
       fullPath,
       version: databaseVersion,
       onCreate: (database, version) async {
+        await _createCompanyTable(database);
+        await _ensureDefaultCompany(database);
         await _createWorkDayTable(database);
         await _createSettingsTable(database);
         await _createAdditionalServiceTable(database);
@@ -53,6 +57,11 @@ class AppDatabase {
 
         if (oldVersion < 4) {
           await _createAdditionalServiceTable(database);
+        }
+
+        if (oldVersion < 5) {
+          await _createCompanyTable(database);
+          await _ensureDefaultCompany(database);
         }
       },
     );
@@ -130,6 +139,28 @@ class AppDatabase {
         updated_at TEXT NOT NULL
       )
     ''');
+  }
+
+  static Future<void> _createCompanyTable(Database database) async {
+    await database.execute('''
+      CREATE TABLE IF NOT EXISTS $companyTable (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        notes TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    ''');
+  }
+
+  static Future<void> _ensureDefaultCompany(Database database) async {
+    final defaultCompany = Company.defaultCompany();
+
+    await database.insert(
+      companyTable,
+      defaultCompany.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
   }
 
   static Future<void> _createSettingsTable(Database database) async {
