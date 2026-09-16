@@ -1,6 +1,9 @@
+import 'package:quick_clock/models/company.dart';
+
 class AppSettings {
   const AppSettings({
     this.id = defaultId,
+    this.companyId = Company.defaultCompanyId,
     required this.halfDayValueCents,
     required this.activeMonday,
     required this.activeTuesday,
@@ -33,6 +36,7 @@ class AppSettings {
   factory AppSettings.fromMap(Map<String, Object?> map) {
     return AppSettings(
       id: map['id'] as int,
+      companyId: map['company_id'] as int? ?? Company.defaultCompanyId,
       halfDayValueCents: map['half_day_value_cents'] as int,
       activeMonday: (map['active_monday'] as int) == 1,
       activeTuesday: (map['active_tuesday'] as int) == 1,
@@ -49,6 +53,7 @@ class AppSettings {
   static const defaultId = 1;
 
   final int id;
+  final int companyId;
   final int halfDayValueCents;
   final bool activeMonday;
   final bool activeTuesday;
@@ -63,6 +68,7 @@ class AppSettings {
   Map<String, Object?> toMap() {
     return {
       'id': id,
+      'company_id': companyId,
       'half_day_value_cents': halfDayValueCents,
       'active_monday': activeMonday ? 1 : 0,
       'active_tuesday': activeTuesday ? 1 : 0,
@@ -78,6 +84,7 @@ class AppSettings {
 
   AppSettings copyWith({
     int? id,
+    int? companyId,
     int? halfDayValueCents,
     bool? activeMonday,
     bool? activeTuesday,
@@ -91,6 +98,7 @@ class AppSettings {
   }) {
     return AppSettings(
       id: id ?? this.id,
+      companyId: companyId ?? this.companyId,
       halfDayValueCents: halfDayValueCents ?? this.halfDayValueCents,
       activeMonday: activeMonday ?? this.activeMonday,
       activeTuesday: activeTuesday ?? this.activeTuesday,
