@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:ponto_eletronico/data/repositories/work_day_repository.dart';
-import 'package:ponto_eletronico/models/work_day.dart';
+import 'package:quick_clock/data/repositories/work_day_repository.dart';
+import 'package:quick_clock/models/work_day.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key, this.workDayRepository});

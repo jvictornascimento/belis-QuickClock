@@ -1,4 +1,4 @@
-import 'package:ponto_eletronico/models/work_day.dart';
+import 'package:quick_clock/models/work_day.dart';
 
 class WorkDayEditPolicy {
   const WorkDayEditPolicy({DateTime Function()? nowProvider})

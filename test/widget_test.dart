@@ -1,28 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ponto_eletronico/data/repositories/settings_repository.dart';
-import 'package:ponto_eletronico/data/repositories/work_day_repository.dart';
-import 'package:ponto_eletronico/main.dart';
-import 'package:ponto_eletronico/models/app_settings.dart';
-import 'package:ponto_eletronico/models/work_day.dart';
+import 'package:quick_clock/data/repositories/additional_service_repository.dart';
+import 'package:quick_clock/data/repositories/settings_repository.dart';
+import 'package:quick_clock/data/repositories/work_day_repository.dart';
+import 'package:quick_clock/main.dart';
+import 'package:quick_clock/models/app_settings.dart';
+import 'package:quick_clock/models/additional_service.dart';
+import 'package:quick_clock/models/work_day.dart';
 
 void main() {
   testWidgets('shows the current day period buttons', (tester) async {
     await tester.pumpWidget(
-      PontoEletronicoApp(workDayRepository: FakeWorkDayRepository()),
+      QuickClockApp(
+        workDayRepository: FakeWorkDayRepository(),
+        settingsRepository: FakeSettingsRepository(),
+        additionalServiceRepository: FakeAdditionalServiceRepository(),
+        nowProvider: () => DateTime(2026, 6, 16),
+      ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Ponto Eletronico'), findsOneWidget);
+    expect(find.text('QuickClock'), findsOneWidget);
     expect(find.text('Antes do almoco'), findsOneWidget);
     expect(find.text('Depois do almoco'), findsOneWidget);
     expect(find.text('Autosave ativo'), findsOneWidget);
   });
 
+  testWidgets('shows no work message on inactive days', (tester) async {
+    await tester.pumpWidget(
+      QuickClockApp(
+        workDayRepository: FakeWorkDayRepository(),
+        settingsRepository: FakeSettingsRepository(),
+        additionalServiceRepository: FakeAdditionalServiceRepository(),
+        nowProvider: () => DateTime(2026, 6, 20),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Hoje não há expediente aproveite sua folga!'),
+      findsOneWidget,
+    );
+    expect(find.text('Antes do almoco'), findsNothing);
+    expect(find.text('Depois do almoco'), findsNothing);
+  });
+
   testWidgets('autosaves when a period is marked', (tester) async {
     final repository = FakeWorkDayRepository();
 
-    await tester.pumpWidget(PontoEletronicoApp(workDayRepository: repository));
+    await tester.pumpWidget(
+      QuickClockApp(
+        workDayRepository: repository,
+        settingsRepository: FakeSettingsRepository(),
+        additionalServiceRepository: FakeAdditionalServiceRepository(),
+        nowProvider: () => DateTime(2026, 6, 16),
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Antes do almoco'));
@@ -46,8 +79,10 @@ void main() {
     );
 
     await tester.pumpWidget(
-      PontoEletronicoApp(
+      QuickClockApp(
         workDayRepository: repository,
+        settingsRepository: FakeSettingsRepository(),
+        additionalServiceRepository: FakeAdditionalServiceRepository(),
         nowProvider: () => DateTime(2026, 6, 16),
       ),
     );
@@ -62,9 +97,11 @@ void main() {
 
   testWidgets('opens settings from the app bar', (tester) async {
     await tester.pumpWidget(
-      PontoEletronicoApp(
+      QuickClockApp(
         workDayRepository: FakeWorkDayRepository(),
         settingsRepository: FakeSettingsRepository(),
+        additionalServiceRepository: FakeAdditionalServiceRepository(),
+        nowProvider: () => DateTime(2026, 6, 16),
       ),
     );
     await tester.pumpAndSettle();
@@ -78,7 +115,12 @@ void main() {
 
   testWidgets('opens search from the app bar', (tester) async {
     await tester.pumpWidget(
-      PontoEletronicoApp(workDayRepository: FakeWorkDayRepository()),
+      QuickClockApp(
+        workDayRepository: FakeWorkDayRepository(),
+        settingsRepository: FakeSettingsRepository(),
+        additionalServiceRepository: FakeAdditionalServiceRepository(),
+        nowProvider: () => DateTime(2026, 6, 16),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -91,9 +133,11 @@ void main() {
 
   testWidgets('opens report from the app bar', (tester) async {
     await tester.pumpWidget(
-      PontoEletronicoApp(
+      QuickClockApp(
         workDayRepository: FakeWorkDayRepository(),
         settingsRepository: FakeSettingsRepository(),
+        additionalServiceRepository: FakeAdditionalServiceRepository(),
+        nowProvider: () => DateTime(2026, 6, 16),
       ),
     );
     await tester.pumpAndSettle();
@@ -103,6 +147,25 @@ void main() {
 
     expect(find.text('Relatorio mensal'), findsOneWidget);
     expect(find.text('Gerar relatorio'), findsOneWidget);
+  });
+
+  testWidgets('opens additional services from the menu', (tester) async {
+    await tester.pumpWidget(
+      QuickClockApp(
+        workDayRepository: FakeWorkDayRepository(),
+        settingsRepository: FakeSettingsRepository(),
+        additionalServiceRepository: FakeAdditionalServiceRepository(),
+        nowProvider: () => DateTime(2026, 6, 16),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.more_vert));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Servicos adicionais').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Adicionar servico'), findsOneWidget);
   });
 }
 
@@ -134,8 +197,19 @@ class FakeSettingsRepository extends SettingsRepository {
 
   @override
   Future<AppSettings> getSettings() async {
-    final now = DateTime(2026, 6, 16);
-
-    return AppSettings(halfDayValueCents: 0, createdAt: now, updatedAt: now);
+    return AppSettings.empty();
   }
+
+  @override
+  Future<AppSettings> saveSettings(AppSettings settings) async {
+    return settings;
+  }
+}
+
+class FakeAdditionalServiceRepository extends AdditionalServiceRepository {
+  FakeAdditionalServiceRepository()
+    : super(databaseProvider: () => throw StateError('Database not used.'));
+
+  @override
+  Future<List<AdditionalService>> findByMonth(String month) async => [];
 }

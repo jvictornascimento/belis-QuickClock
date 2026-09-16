@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ponto_eletronico/data/repositories/work_day_repository.dart';
-import 'package:ponto_eletronico/features/search/presentation/search_page.dart';
-import 'package:ponto_eletronico/models/work_day.dart';
+import 'package:quick_clock/data/repositories/work_day_repository.dart';
+import 'package:quick_clock/features/search/presentation/search_page.dart';
+import 'package:quick_clock/models/work_day.dart';
 
 void main() {
   testWidgets('searches a marked day by date', (tester) async {

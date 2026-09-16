@@ -1,5 +1,5 @@
-import 'package:ponto_eletronico/data/database/app_database.dart';
-import 'package:ponto_eletronico/models/app_settings.dart';
+import 'package:quick_clock/data/database/app_database.dart';
+import 'package:quick_clock/models/app_settings.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SettingsRepository {
@@ -33,13 +33,16 @@ class SettingsRepository {
       );
     }
 
-    final database = await _databaseProvider();
     final currentSettings = await getSettings();
-    final now = DateTime.now();
-    final valueToSave = currentSettings.copyWith(
-      halfDayValueCents: valueCents,
-      updatedAt: now,
+    return saveSettings(
+      currentSettings.copyWith(halfDayValueCents: valueCents),
     );
+  }
+
+  Future<AppSettings> saveSettings(AppSettings settings) async {
+    final database = await _databaseProvider();
+    final now = DateTime.now();
+    final valueToSave = settings.copyWith(updatedAt: now);
 
     await database.insert(
       AppDatabase.settingsTable,

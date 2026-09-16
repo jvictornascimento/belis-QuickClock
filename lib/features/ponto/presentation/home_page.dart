@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:ponto_eletronico/data/repositories/settings_repository.dart';
-import 'package:ponto_eletronico/data/repositories/work_day_repository.dart';
-import 'package:ponto_eletronico/features/ponto/domain/work_day_edit_policy.dart';
-import 'package:ponto_eletronico/features/report/presentation/month_report_page.dart';
-import 'package:ponto_eletronico/features/search/presentation/search_page.dart';
-import 'package:ponto_eletronico/features/settings/presentation/settings_page.dart';
-import 'package:ponto_eletronico/models/work_day.dart';
+import 'package:quick_clock/data/repositories/additional_service_repository.dart';
+import 'package:quick_clock/data/repositories/settings_repository.dart';
+import 'package:quick_clock/data/repositories/work_day_repository.dart';
+import 'package:quick_clock/features/additional_services/presentation/additional_services_page.dart';
+import 'package:quick_clock/features/ponto/domain/work_day_edit_policy.dart';
+import 'package:quick_clock/features/report/presentation/month_report_page.dart';
+import 'package:quick_clock/features/search/presentation/search_page.dart';
+import 'package:quick_clock/features/settings/presentation/settings_page.dart';
+import 'package:quick_clock/models/app_settings.dart';
+import 'package:quick_clock/models/work_day.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
     this.workDayRepository,
     this.settingsRepository,
+    this.additionalServiceRepository,
     this.nowProvider,
   });
 
   final WorkDayRepository? workDayRepository;
   final SettingsRepository? settingsRepository;
+  final AdditionalServiceRepository? additionalServiceRepository;
   final DateTime Function()? nowProvider;
 
   @override
@@ -25,9 +30,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late final WorkDayRepository _workDayRepository;
+  late final SettingsRepository _settingsRepository;
   late final WorkDayEditPolicy _editPolicy;
+  late final DateTime _today;
   late final String _todayKey;
 
+  AppSettings? _settings;
   WorkDay? _workDay;
   bool _isLoading = true;
   bool _isSaving = false;
@@ -37,23 +45,29 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _workDayRepository = widget.workDayRepository ?? WorkDayRepository();
+    _settingsRepository = widget.settingsRepository ?? SettingsRepository();
     _editPolicy = WorkDayEditPolicy(nowProvider: widget.nowProvider);
-    _todayKey = WorkDay.dateKey((widget.nowProvider ?? DateTime.now)());
-    _loadToday();
+    _today = (widget.nowProvider ?? DateTime.now)();
+    _todayKey = WorkDay.dateKey(_today);
+    _loadState();
   }
 
-  Future<void> _loadToday() async {
+  Future<void> _loadState() async {
     try {
-      final savedWorkDay = await _workDayRepository.findByDate(_todayKey);
-      final workDay =
-          savedWorkDay ??
-          WorkDay.emptyFor((widget.nowProvider ?? DateTime.now)());
+      final results = await Future.wait([
+        _settingsRepository.getSettings(),
+        _workDayRepository.findByDate(_todayKey),
+      ]);
+      final settings = results[0] as AppSettings;
+      final savedWorkDay = results[1] as WorkDay?;
+      final workDay = savedWorkDay ?? WorkDay.emptyFor(_today);
 
       if (!mounted) {
         return;
       }
 
       setState(() {
+        _settings = settings;
         _workDay = workDay;
         _isLoading = false;
         _errorMessage = null;
@@ -133,11 +147,13 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final workDay = _workDay;
+    final settings = _settings;
+    final isWorkday = settings?.isActiveWeekday(_today.weekday) ?? true;
     final canEdit = workDay != null && _editPolicy.canEdit(workDay.date);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ponto Eletronico'),
+        title: const Text('QuickClock'),
         actions: [
           IconButton(
             tooltip: 'Relatorio',
@@ -147,6 +163,8 @@ class _HomePageState extends State<HomePage> {
                   builder: (_) => MonthReportPage(
                     workDayRepository: widget.workDayRepository,
                     settingsRepository: widget.settingsRepository,
+                    additionalServiceRepository:
+                        widget.additionalServiceRepository,
                   ),
                 ),
               );
@@ -167,16 +185,43 @@ class _HomePageState extends State<HomePage> {
           ),
           IconButton(
             tooltip: 'Configuracoes',
-            onPressed: () {
-              Navigator.of(context).push(
+            onPressed: () async {
+              await Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (_) => SettingsPage(
                     settingsRepository: widget.settingsRepository,
                   ),
                 ),
               );
+              if (mounted) {
+                await _loadState();
+              }
             },
             icon: const Icon(Icons.settings),
+          ),
+          PopupMenuButton<HomeMenuAction>(
+            tooltip: 'Menu',
+            onSelected: (action) {
+              switch (action) {
+                case HomeMenuAction.additionalServices:
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => AdditionalServicesPage(
+                        additionalServiceRepository:
+                            widget.additionalServiceRepository,
+                        nowProvider: widget.nowProvider,
+                      ),
+                    ),
+                  );
+                  break;
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: HomeMenuAction.additionalServices,
+                child: Text('Servicos adicionais'),
+              ),
+            ],
           ),
         ],
       ),
@@ -198,6 +243,16 @@ class _HomePageState extends State<HomePage> {
               if (_isLoading)
                 const Expanded(
                   child: Center(child: CircularProgressIndicator()),
+                )
+              else if (!isWorkday)
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      'Hoje não há expediente aproveite sua folga!',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                  ),
                 )
               else if (workDay != null) ...[
                 PeriodButton(
@@ -249,6 +304,8 @@ class _HomePageState extends State<HomePage> {
     return 'Autosave ativo';
   }
 }
+
+enum HomeMenuAction { additionalServices }
 
 class PeriodButton extends StatelessWidget {
   const PeriodButton({

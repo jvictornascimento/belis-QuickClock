@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This repository is a Flutter app named `ponto_eletronico`. The current generated structure is:
+This repository is a Flutter app named `quick_clock`. The current generated structure is:
 
 - `lib/` for Dart application code.
 - `test/` for widget and unit tests.
