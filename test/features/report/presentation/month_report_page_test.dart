@@ -6,6 +6,7 @@ import 'package:quick_clock/data/repositories/work_day_repository.dart';
 import 'package:quick_clock/features/report/presentation/month_report_page.dart';
 import 'package:quick_clock/models/app_settings.dart';
 import 'package:quick_clock/models/additional_service.dart';
+import 'package:quick_clock/models/company.dart';
 import 'package:quick_clock/models/work_day.dart';
 
 void main() {
@@ -85,10 +86,13 @@ class FakeSettingsRepository extends SettingsRepository {
   final int valueCents;
 
   @override
-  Future<AppSettings> getSettings() async {
+  Future<AppSettings> getSettings({
+    int companyId = Company.defaultCompanyId,
+  }) async {
     final now = DateTime(2026, 6, 16);
 
     return AppSettings(
+      companyId: companyId,
       halfDayValueCents: valueCents,
       activeMonday: true,
       activeTuesday: true,

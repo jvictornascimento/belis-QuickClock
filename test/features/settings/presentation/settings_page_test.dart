@@ -7,6 +7,7 @@ import 'package:quick_clock/data/repositories/database_backup_repository.dart';
 import 'package:quick_clock/data/repositories/settings_repository.dart';
 import 'package:quick_clock/features/settings/presentation/settings_page.dart';
 import 'package:quick_clock/models/app_settings.dart';
+import 'package:quick_clock/models/company.dart';
 
 void main() {
   testWidgets('shows the saved half day value and workdays', (tester) async {
@@ -103,7 +104,11 @@ class FakeSettingsRepository extends SettingsRepository {
   AppSettings? savedSettings;
 
   @override
-  Future<AppSettings> getSettings() async => _settings;
+  Future<AppSettings> getSettings({
+    int companyId = Company.defaultCompanyId,
+  }) async {
+    return _settings.copyWith(companyId: companyId);
+  }
 
   @override
   Future<AppSettings> saveSettings(AppSettings settings) async {
