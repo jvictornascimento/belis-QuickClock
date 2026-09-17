@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quick_clock/data/repositories/additional_service_repository.dart';
 import 'package:quick_clock/features/additional_services/presentation/additional_services_page.dart';
 import 'package:quick_clock/models/additional_service.dart';
+import 'package:quick_clock/models/company.dart';
 
 void main() {
   testWidgets('shows saved services for the current month', (tester) async {
@@ -58,7 +59,10 @@ class FakeAdditionalServiceRepository extends AdditionalServiceRepository {
   AdditionalService? savedService;
 
   @override
-  Future<List<AdditionalService>> findByMonth(String month) async {
+  Future<List<AdditionalService>> findByMonth(
+    String month, {
+    int companyId = Company.defaultCompanyId,
+  }) async {
     return services.where((service) => service.date.startsWith(month)).toList();
   }
 

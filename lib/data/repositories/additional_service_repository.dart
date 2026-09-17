@@ -1,5 +1,6 @@
 import 'package:quick_clock/data/database/app_database.dart';
 import 'package:quick_clock/models/additional_service.dart';
+import 'package:quick_clock/models/company.dart';
 import 'package:sqflite/sqflite.dart';
 
 class AdditionalServiceRepository {
@@ -8,12 +9,15 @@ class AdditionalServiceRepository {
 
   final Future<Database> Function() _databaseProvider;
 
-  Future<List<AdditionalService>> findByMonth(String month) async {
+  Future<List<AdditionalService>> findByMonth(
+    String month, {
+    int companyId = Company.defaultCompanyId,
+  }) async {
     final database = await _databaseProvider();
     final rows = await database.query(
       AppDatabase.additionalServiceTable,
-      where: 'date LIKE ?',
-      whereArgs: ['$month%'],
+      where: 'company_id = ? AND date LIKE ?',
+      whereArgs: [companyId, '$month%'],
       orderBy: 'date ASC, id ASC',
     );
 
@@ -49,12 +53,15 @@ class AdditionalServiceRepository {
     return valueToSave.copyWith(id: id);
   }
 
-  Future<void> delete(int id) async {
+  Future<void> delete(
+    int id, {
+    int companyId = Company.defaultCompanyId,
+  }) async {
     final database = await _databaseProvider();
     await database.delete(
       AppDatabase.additionalServiceTable,
-      where: 'id = ?',
-      whereArgs: [id],
+      where: 'id = ? AND company_id = ?',
+      whereArgs: [id, companyId],
     );
   }
 }
