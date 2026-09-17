@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quick_clock/data/repositories/additional_service_repository.dart';
+import 'package:quick_clock/data/repositories/company_repository.dart';
 import 'package:quick_clock/data/repositories/settings_repository.dart';
 import 'package:quick_clock/data/repositories/work_day_repository.dart';
 import 'package:quick_clock/main.dart';
@@ -11,15 +12,10 @@ import 'package:quick_clock/models/work_day.dart';
 
 void main() {
   testWidgets('shows the current day period buttons', (tester) async {
-    await tester.pumpWidget(
-      QuickClockApp(
-        workDayRepository: FakeWorkDayRepository(),
-        settingsRepository: FakeSettingsRepository(),
-        additionalServiceRepository: FakeAdditionalServiceRepository(),
-        nowProvider: () => DateTime(2026, 6, 16),
-      ),
+    await _pumpAppAndOpenCompany(
+      tester,
+      nowProvider: () => DateTime(2026, 6, 16),
     );
-    await tester.pumpAndSettle();
 
     expect(find.text('QuickClock'), findsOneWidget);
     expect(find.text('Antes do almoco'), findsOneWidget);
@@ -28,15 +24,10 @@ void main() {
   });
 
   testWidgets('shows no work message on inactive days', (tester) async {
-    await tester.pumpWidget(
-      QuickClockApp(
-        workDayRepository: FakeWorkDayRepository(),
-        settingsRepository: FakeSettingsRepository(),
-        additionalServiceRepository: FakeAdditionalServiceRepository(),
-        nowProvider: () => DateTime(2026, 6, 20),
-      ),
+    await _pumpAppAndOpenCompany(
+      tester,
+      nowProvider: () => DateTime(2026, 6, 20),
     );
-    await tester.pumpAndSettle();
 
     expect(
       find.text('Hoje não há expediente aproveite sua folga!'),
@@ -49,15 +40,11 @@ void main() {
   testWidgets('autosaves when a period is marked', (tester) async {
     final repository = FakeWorkDayRepository();
 
-    await tester.pumpWidget(
-      QuickClockApp(
-        workDayRepository: repository,
-        settingsRepository: FakeSettingsRepository(),
-        additionalServiceRepository: FakeAdditionalServiceRepository(),
-        nowProvider: () => DateTime(2026, 6, 16),
-      ),
+    await _pumpAppAndOpenCompany(
+      tester,
+      workDayRepository: repository,
+      nowProvider: () => DateTime(2026, 6, 16),
     );
-    await tester.pumpAndSettle();
 
     await tester.tap(find.text('Antes do almoco'));
     await tester.pumpAndSettle();
@@ -79,15 +66,11 @@ void main() {
       ),
     );
 
-    await tester.pumpWidget(
-      QuickClockApp(
-        workDayRepository: repository,
-        settingsRepository: FakeSettingsRepository(),
-        additionalServiceRepository: FakeAdditionalServiceRepository(),
-        nowProvider: () => DateTime(2026, 6, 16),
-      ),
+    await _pumpAppAndOpenCompany(
+      tester,
+      workDayRepository: repository,
+      nowProvider: () => DateTime(2026, 6, 16),
     );
-    await tester.pumpAndSettle();
 
     await tester.tap(find.text('Antes do almoco'));
     await tester.pumpAndSettle();
@@ -97,15 +80,10 @@ void main() {
   });
 
   testWidgets('opens settings from the app bar', (tester) async {
-    await tester.pumpWidget(
-      QuickClockApp(
-        workDayRepository: FakeWorkDayRepository(),
-        settingsRepository: FakeSettingsRepository(),
-        additionalServiceRepository: FakeAdditionalServiceRepository(),
-        nowProvider: () => DateTime(2026, 6, 16),
-      ),
+    await _pumpAppAndOpenCompany(
+      tester,
+      nowProvider: () => DateTime(2026, 6, 16),
     );
-    await tester.pumpAndSettle();
 
     await tester.tap(find.byIcon(Icons.settings));
     await tester.pumpAndSettle();
@@ -115,15 +93,10 @@ void main() {
   });
 
   testWidgets('opens search from the app bar', (tester) async {
-    await tester.pumpWidget(
-      QuickClockApp(
-        workDayRepository: FakeWorkDayRepository(),
-        settingsRepository: FakeSettingsRepository(),
-        additionalServiceRepository: FakeAdditionalServiceRepository(),
-        nowProvider: () => DateTime(2026, 6, 16),
-      ),
+    await _pumpAppAndOpenCompany(
+      tester,
+      nowProvider: () => DateTime(2026, 6, 16),
     );
-    await tester.pumpAndSettle();
 
     await tester.tap(find.byIcon(Icons.search));
     await tester.pumpAndSettle();
@@ -133,15 +106,10 @@ void main() {
   });
 
   testWidgets('opens report from the app bar', (tester) async {
-    await tester.pumpWidget(
-      QuickClockApp(
-        workDayRepository: FakeWorkDayRepository(),
-        settingsRepository: FakeSettingsRepository(),
-        additionalServiceRepository: FakeAdditionalServiceRepository(),
-        nowProvider: () => DateTime(2026, 6, 16),
-      ),
+    await _pumpAppAndOpenCompany(
+      tester,
+      nowProvider: () => DateTime(2026, 6, 16),
     );
-    await tester.pumpAndSettle();
 
     await tester.tap(find.byIcon(Icons.summarize));
     await tester.pumpAndSettle();
@@ -151,15 +119,10 @@ void main() {
   });
 
   testWidgets('opens additional services from the menu', (tester) async {
-    await tester.pumpWidget(
-      QuickClockApp(
-        workDayRepository: FakeWorkDayRepository(),
-        settingsRepository: FakeSettingsRepository(),
-        additionalServiceRepository: FakeAdditionalServiceRepository(),
-        nowProvider: () => DateTime(2026, 6, 16),
-      ),
+    await _pumpAppAndOpenCompany(
+      tester,
+      nowProvider: () => DateTime(2026, 6, 16),
     );
-    await tester.pumpAndSettle();
 
     await tester.tap(find.byIcon(Icons.more_vert));
     await tester.pumpAndSettle();
@@ -168,6 +131,36 @@ void main() {
 
     expect(find.text('Adicionar servico'), findsOneWidget);
   });
+}
+
+Future<void> _pumpAppAndOpenCompany(
+  WidgetTester tester, {
+  WorkDayRepository? workDayRepository,
+  SettingsRepository? settingsRepository,
+  AdditionalServiceRepository? additionalServiceRepository,
+  DateTime Function()? nowProvider,
+}) async {
+  await tester.pumpWidget(
+    QuickClockApp(
+      companyRepository: FakeCompanyRepository(),
+      workDayRepository: workDayRepository ?? FakeWorkDayRepository(),
+      settingsRepository: settingsRepository ?? FakeSettingsRepository(),
+      additionalServiceRepository:
+          additionalServiceRepository ?? FakeAdditionalServiceRepository(),
+      nowProvider: nowProvider,
+    ),
+  );
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(Company.defaultCompanyName));
+  await tester.pumpAndSettle();
+}
+
+class FakeCompanyRepository extends CompanyRepository {
+  FakeCompanyRepository()
+    : super(databaseProvider: () => throw StateError('Database not used.'));
+
+  @override
+  Future<List<Company>> findAll() async => [Company.defaultCompany()];
 }
 
 class FakeWorkDayRepository extends WorkDayRepository {
