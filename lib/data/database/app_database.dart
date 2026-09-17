@@ -11,7 +11,7 @@ class AppDatabase {
   AppDatabase._();
 
   static const databaseName = 'ponto_eletronico.db';
-  static const databaseVersion = 6;
+  static const databaseVersion = 7;
   static const localSeedAssetPath = 'local_seed/initial_work_days.sql';
   static const useLocalSeed = bool.fromEnvironment('LOCAL_SEED_WORK_DAYS');
 
@@ -71,6 +71,10 @@ class AppDatabase {
 
         if (oldVersion >= 2 && oldVersion < 6) {
           await _migrateSettingsToCompanyScope(database);
+        }
+
+        if (oldVersion < 7) {
+          await _migrateWorkDaysToCompanyScope(database);
         }
       },
     );
@@ -141,13 +145,45 @@ class AppDatabase {
     await database.execute('''
       CREATE TABLE $workDayTable (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        date TEXT NOT NULL UNIQUE,
+        company_id INTEGER NOT NULL DEFAULT ${Company.defaultCompanyId},
+        date TEXT NOT NULL,
         worked_before_lunch INTEGER NOT NULL DEFAULT 0 CHECK (worked_before_lunch IN (0, 1)),
         worked_after_lunch INTEGER NOT NULL DEFAULT 0 CHECK (worked_after_lunch IN (0, 1)),
         created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
+        updated_at TEXT NOT NULL,
+        UNIQUE (company_id, date)
       )
     ''');
+  }
+
+  static Future<void> _migrateWorkDaysToCompanyScope(Database database) async {
+    const legacyWorkDayTable = 'work_day_legacy';
+
+    await database.execute(
+      'ALTER TABLE $workDayTable RENAME TO $legacyWorkDayTable',
+    );
+    await _createWorkDayTable(database);
+    await database.execute('''
+      INSERT INTO $workDayTable (
+        id,
+        company_id,
+        date,
+        worked_before_lunch,
+        worked_after_lunch,
+        created_at,
+        updated_at
+      )
+      SELECT
+        id,
+        ${Company.defaultCompanyId},
+        date,
+        worked_before_lunch,
+        worked_after_lunch,
+        created_at,
+        updated_at
+      FROM $legacyWorkDayTable
+    ''');
+    await database.execute('DROP TABLE $legacyWorkDayTable');
   }
 
   static Future<void> _createCompanyTable(Database database) async {

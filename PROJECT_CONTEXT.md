@@ -43,6 +43,7 @@ Suggested tables:
 ```text
 work_day
   id
+  company_id
   date
   worked_before_lunch
   worked_after_lunch
@@ -59,6 +60,9 @@ settings
 Settings are scoped by company. Existing databases keep their current settings
 under the default company during migration, and new companies start with the
 default Monday-to-Friday schedule.
+
+Work days are scoped by company. The same date can exist for multiple companies,
+but only once per company.
 
 ## Screens
 
