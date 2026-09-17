@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:quick_clock/data/repositories/additional_service_repository.dart';
 import 'package:quick_clock/models/additional_service.dart';
+import 'package:quick_clock/models/company.dart';
 import 'package:quick_clock/shared/money/money_formatter.dart';
 
 class AdditionalServicesPage extends StatefulWidget {
   const AdditionalServicesPage({
     super.key,
+    this.companyId = Company.defaultCompanyId,
     this.additionalServiceRepository,
     this.nowProvider,
   });
 
+  final int companyId;
   final AdditionalServiceRepository? additionalServiceRepository;
   final DateTime Function()? nowProvider;
 
@@ -58,7 +61,10 @@ class _AdditionalServicesPageState extends State<AdditionalServicesPage> {
     });
 
     try {
-      final services = await _repository.findByMonth(month);
+      final services = await _repository.findByMonth(
+        month,
+        companyId: widget.companyId,
+      );
 
       if (!mounted) {
         return;
@@ -118,6 +124,7 @@ class _AdditionalServicesPageState extends State<AdditionalServicesPage> {
 
     final now = DateTime.now();
     final service = AdditionalService(
+      companyId: widget.companyId,
       date: _dateController.text,
       description: description,
       valueCents: valueCents,
@@ -162,7 +169,7 @@ class _AdditionalServicesPageState extends State<AdditionalServicesPage> {
       return;
     }
 
-    await _repository.delete(id);
+    await _repository.delete(id, companyId: widget.companyId);
     await _loadServices();
   }
 

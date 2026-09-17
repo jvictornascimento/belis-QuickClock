@@ -4,18 +4,21 @@ import 'package:file_selector/file_selector.dart';
 import 'package:quick_clock/data/repositories/settings_repository.dart';
 import 'package:quick_clock/data/repositories/database_backup_repository.dart';
 import 'package:quick_clock/models/app_settings.dart';
+import 'package:quick_clock/models/company.dart';
 import 'package:quick_clock/shared/money/money_formatter.dart';
 import 'package:share_plus/share_plus.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({
     super.key,
+    this.companyId = Company.defaultCompanyId,
     this.settingsRepository,
     this.backupRepository,
     this.pickBackupFile,
     this.shareBackupFile,
   });
 
+  final int companyId;
   final SettingsRepository? settingsRepository;
   final DatabaseBackupRepository? backupRepository;
   final Future<XFile?> Function()? pickBackupFile;
@@ -53,7 +56,9 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _loadSettings() async {
     try {
-      final settings = await _settingsRepository.getSettings();
+      final settings = await _settingsRepository.getSettings(
+        companyId: widget.companyId,
+      );
 
       if (!mounted) {
         return;

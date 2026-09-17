@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:quick_clock/data/repositories/work_day_repository.dart';
+import 'package:quick_clock/models/company.dart';
 import 'package:quick_clock/models/work_day.dart';
 
 class SearchPage extends StatefulWidget {
-  const SearchPage({super.key, this.workDayRepository});
+  const SearchPage({
+    super.key,
+    this.companyId = Company.defaultCompanyId,
+    this.workDayRepository,
+  });
 
+  final int companyId;
   final WorkDayRepository? workDayRepository;
 
   @override
@@ -46,7 +52,10 @@ class _SearchPageState extends State<SearchPage> {
       _message = null;
     });
 
-    final workDay = await _workDayRepository.findByDate(date);
+    final workDay = await _workDayRepository.findByDate(
+      date,
+      companyId: widget.companyId,
+    );
 
     if (!mounted) {
       return;
@@ -70,7 +79,10 @@ class _SearchPageState extends State<SearchPage> {
       _message = null;
     });
 
-    final results = await _workDayRepository.findMarkedByMonth(month);
+    final results = await _workDayRepository.findMarkedByMonth(
+      month,
+      companyId: widget.companyId,
+    );
 
     if (!mounted) {
       return;
