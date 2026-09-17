@@ -64,6 +64,9 @@ default Monday-to-Friday schedule.
 Work days are scoped by company. The same date can exist for multiple companies,
 but only once per company.
 
+Additional services are scoped by company and must only appear in that company's
+monthly report.
+
 ## Screens
 
 ### Home

@@ -11,7 +11,7 @@ class AppDatabase {
   AppDatabase._();
 
   static const databaseName = 'ponto_eletronico.db';
-  static const databaseVersion = 7;
+  static const databaseVersion = 8;
   static const localSeedAssetPath = 'local_seed/initial_work_days.sql';
   static const useLocalSeed = bool.fromEnvironment('LOCAL_SEED_WORK_DAYS');
 
@@ -75,6 +75,10 @@ class AppDatabase {
 
         if (oldVersion < 7) {
           await _migrateWorkDaysToCompanyScope(database);
+        }
+
+        if (oldVersion < 8) {
+          await _migrateAdditionalServicesToCompanyScope(database);
         }
       },
     );
@@ -271,6 +275,7 @@ class AppDatabase {
     await database.execute('''
       CREATE TABLE IF NOT EXISTS $additionalServiceTable (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        company_id INTEGER NOT NULL DEFAULT ${Company.defaultCompanyId},
         date TEXT NOT NULL,
         description TEXT NOT NULL,
         value_cents INTEGER NOT NULL DEFAULT 0 CHECK (value_cents >= 0),
@@ -278,6 +283,38 @@ class AppDatabase {
         updated_at TEXT NOT NULL
       )
     ''');
+  }
+
+  static Future<void> _migrateAdditionalServicesToCompanyScope(
+    Database database,
+  ) async {
+    const legacyAdditionalServiceTable = 'additional_service_legacy';
+
+    await database.execute(
+      'ALTER TABLE $additionalServiceTable RENAME TO $legacyAdditionalServiceTable',
+    );
+    await _createAdditionalServiceTable(database);
+    await database.execute('''
+      INSERT INTO $additionalServiceTable (
+        id,
+        company_id,
+        date,
+        description,
+        value_cents,
+        created_at,
+        updated_at
+      )
+      SELECT
+        id,
+        ${Company.defaultCompanyId},
+        date,
+        description,
+        value_cents,
+        created_at,
+        updated_at
+      FROM $legacyAdditionalServiceTable
+    ''');
+    await database.execute('DROP TABLE $legacyAdditionalServiceTable');
   }
 
   static Future<void> _addWorkScheduleColumns(Database database) async {
