@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quick_clock/data/repositories/work_day_repository.dart';
 import 'package:quick_clock/features/search/presentation/search_page.dart';
+import 'package:quick_clock/models/company.dart';
 import 'package:quick_clock/models/work_day.dart';
 
 void main() {
@@ -55,10 +56,20 @@ class FakeWorkDayRepository extends WorkDayRepository {
   final List<WorkDay> monthResults;
 
   @override
-  Future<WorkDay?> findByDate(String date) async => dayByDate;
+  Future<WorkDay?> findByDate(
+    String date, {
+    int companyId = Company.defaultCompanyId,
+  }) async {
+    return dayByDate;
+  }
 
   @override
-  Future<List<WorkDay>> findMarkedByMonth(String month) async => monthResults;
+  Future<List<WorkDay>> findMarkedByMonth(
+    String month, {
+    int companyId = Company.defaultCompanyId,
+  }) async {
+    return monthResults;
+  }
 }
 
 WorkDay _workDay(String date, {bool before = false, bool after = false}) {

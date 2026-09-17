@@ -65,7 +65,12 @@ class FakeWorkDayRepository extends WorkDayRepository {
   final List<WorkDay> monthResults;
 
   @override
-  Future<List<WorkDay>> findMarkedByMonth(String month) async => monthResults;
+  Future<List<WorkDay>> findMarkedByMonth(
+    String month, {
+    int companyId = Company.defaultCompanyId,
+  }) async {
+    return monthResults;
+  }
 }
 
 class FakeAdditionalServiceRepository extends AdditionalServiceRepository {

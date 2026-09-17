@@ -1,6 +1,9 @@
+import 'package:quick_clock/models/company.dart';
+
 class WorkDay {
   const WorkDay({
     this.id,
+    this.companyId = Company.defaultCompanyId,
     required this.date,
     required this.workedBeforeLunch,
     required this.workedAfterLunch,
@@ -12,6 +15,7 @@ class WorkDay {
     final now = DateTime.now();
 
     return WorkDay(
+      companyId: Company.defaultCompanyId,
       date: dateKey(dateTime),
       workedBeforeLunch: false,
       workedAfterLunch: false,
@@ -23,6 +27,7 @@ class WorkDay {
   factory WorkDay.fromMap(Map<String, Object?> map) {
     return WorkDay(
       id: map['id'] as int?,
+      companyId: map['company_id'] as int? ?? Company.defaultCompanyId,
       date: map['date'] as String,
       workedBeforeLunch: (map['worked_before_lunch'] as int) == 1,
       workedAfterLunch: (map['worked_after_lunch'] as int) == 1,
@@ -32,6 +37,7 @@ class WorkDay {
   }
 
   final int? id;
+  final int companyId;
   final String date;
   final bool workedBeforeLunch;
   final bool workedAfterLunch;
@@ -43,6 +49,7 @@ class WorkDay {
   Map<String, Object?> toMap() {
     return {
       'id': id,
+      'company_id': companyId,
       'date': date,
       'worked_before_lunch': workedBeforeLunch ? 1 : 0,
       'worked_after_lunch': workedAfterLunch ? 1 : 0,
@@ -53,6 +60,7 @@ class WorkDay {
 
   WorkDay copyWith({
     int? id,
+    int? companyId,
     String? date,
     bool? workedBeforeLunch,
     bool? workedAfterLunch,
@@ -61,6 +69,7 @@ class WorkDay {
   }) {
     return WorkDay(
       id: id ?? this.id,
+      companyId: companyId ?? this.companyId,
       date: date ?? this.date,
       workedBeforeLunch: workedBeforeLunch ?? this.workedBeforeLunch,
       workedAfterLunch: workedAfterLunch ?? this.workedAfterLunch,

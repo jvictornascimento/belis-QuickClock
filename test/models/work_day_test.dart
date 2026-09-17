@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quick_clock/models/company.dart';
 import 'package:quick_clock/models/work_day.dart';
 
 void main() {
@@ -23,6 +24,7 @@ void main() {
 
       expect(workDay.toMap(), {
         'id': 1,
+        'company_id': Company.defaultCompanyId,
         'date': '2026-06-07',
         'worked_before_lunch': 1,
         'worked_after_lunch': 0,
@@ -34,6 +36,7 @@ void main() {
     test('restores values from a database map', () {
       final workDay = WorkDay.fromMap({
         'id': 1,
+        'company_id': Company.defaultCompanyId,
         'date': '2026-06-07',
         'worked_before_lunch': 1,
         'worked_after_lunch': 0,
@@ -42,6 +45,7 @@ void main() {
       });
 
       expect(workDay.id, 1);
+      expect(workDay.companyId, Company.defaultCompanyId);
       expect(workDay.date, '2026-06-07');
       expect(workDay.workedBeforeLunch, isTrue);
       expect(workDay.workedAfterLunch, isFalse);
