@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quick_clock/data/repositories/additional_service_repository.dart';
+import 'package:quick_clock/data/repositories/estimate_repository.dart';
 import 'package:quick_clock/data/repositories/settings_repository.dart';
 import 'package:quick_clock/data/repositories/work_day_repository.dart';
 import 'package:quick_clock/features/report/presentation/month_report_page.dart';
 import 'package:quick_clock/models/app_settings.dart';
 import 'package:quick_clock/models/additional_service.dart';
 import 'package:quick_clock/models/company.dart';
+import 'package:quick_clock/models/estimate.dart';
 import 'package:quick_clock/models/work_day.dart';
 
 void main() {
   testWidgets('shows marked days and totals for a month', (tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     await tester.pumpWidget(
       MaterialApp(
         home: MonthReportPage(
@@ -23,6 +30,9 @@ void main() {
           ),
           additionalServiceRepository: FakeAdditionalServiceRepository(
             monthResults: [_service('2026-06-17', 'Instalacao extra', 5000)],
+          ),
+          estimateRepository: FakeEstimateRepository(
+            monthResults: [_estimate('2026-06-18', 'Projeto aprovado', 12000)],
           ),
           settingsRepository: FakeSettingsRepository(valueCents: 8000),
         ),
@@ -39,25 +49,30 @@ void main() {
     expect(find.text('Dias trabalhados: 2'), findsOneWidget);
     expect(find.text('Periodos: 3'), findsOneWidget);
     expect(find.text('Pontos: R\$ 240,00'), findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.text('Servicos adicionais'),
-      120,
-      scrollable: find.byType(Scrollable).last,
-    );
-
     expect(find.text('Servicos adicionais'), findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.text('Instalacao extra'),
-      120,
-      scrollable: find.byType(Scrollable).last,
-    );
-
     expect(find.text('Instalacao extra'), findsOneWidget);
     expect(find.text('Servicos adicionais: R\$ 50,00'), findsOneWidget);
-    expect(find.text('Total: R\$ 290,00'), findsOneWidget);
+    expect(find.text('Projeto aprovado'), findsOneWidget);
+    expect(find.text('Orcamentos aprovados: R\$ 120,00'), findsOneWidget);
+    expect(find.text('Total: R\$ 410,00'), findsOneWidget);
     expect(find.text('Visualizar PDF'), findsOneWidget);
     expect(find.text('Compartilhar PDF'), findsOneWidget);
   });
+}
+
+class FakeEstimateRepository extends EstimateRepository {
+  FakeEstimateRepository({this.monthResults = const []})
+    : super(databaseProvider: () => throw StateError('Database not used.'));
+
+  final List<Estimate> monthResults;
+
+  @override
+  Future<List<Estimate>> findApprovedByMonth(
+    String month, {
+    int companyId = Company.defaultCompanyId,
+  }) async {
+    return monthResults;
+  }
 }
 
 class FakeWorkDayRepository extends WorkDayRepository {
@@ -139,6 +154,21 @@ WorkDay _workDay(String date, {bool before = false, bool after = false}) {
     date: date,
     workedBeforeLunch: before,
     workedAfterLunch: after,
+    createdAt: now,
+    updatedAt: now,
+  );
+}
+
+Estimate _estimate(String approvedAt, String description, int valueCents) {
+  final now = DateTime(2026, 6, 16);
+
+  return Estimate(
+    id: 1,
+    date: approvedAt,
+    description: description,
+    valueCents: valueCents,
+    status: EstimateStatus.approved,
+    approvedAt: DateTime.parse('${approvedAt}T10:00:00.000'),
     createdAt: now,
     updatedAt: now,
   );

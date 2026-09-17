@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quick_clock/data/repositories/additional_service_repository.dart';
 import 'package:quick_clock/data/repositories/company_repository.dart';
+import 'package:quick_clock/data/repositories/estimate_repository.dart';
 import 'package:quick_clock/data/repositories/settings_repository.dart';
 import 'package:quick_clock/data/repositories/work_day_repository.dart';
 import 'package:quick_clock/main.dart';
 import 'package:quick_clock/models/app_settings.dart';
 import 'package:quick_clock/models/additional_service.dart';
 import 'package:quick_clock/models/company.dart';
+import 'package:quick_clock/models/estimate.dart';
 import 'package:quick_clock/models/work_day.dart';
 
 void main() {
@@ -138,6 +140,7 @@ Future<void> _pumpAppAndOpenCompany(
   WorkDayRepository? workDayRepository,
   SettingsRepository? settingsRepository,
   AdditionalServiceRepository? additionalServiceRepository,
+  EstimateRepository? estimateRepository,
   DateTime Function()? nowProvider,
 }) async {
   await tester.pumpWidget(
@@ -147,6 +150,7 @@ Future<void> _pumpAppAndOpenCompany(
       settingsRepository: settingsRepository ?? FakeSettingsRepository(),
       additionalServiceRepository:
           additionalServiceRepository ?? FakeAdditionalServiceRepository(),
+      estimateRepository: estimateRepository ?? FakeEstimateRepository(),
       nowProvider: nowProvider,
     ),
   );
@@ -218,6 +222,19 @@ class FakeAdditionalServiceRepository extends AdditionalServiceRepository {
 
   @override
   Future<List<AdditionalService>> findByMonth(
+    String month, {
+    int companyId = Company.defaultCompanyId,
+  }) async {
+    return [];
+  }
+}
+
+class FakeEstimateRepository extends EstimateRepository {
+  FakeEstimateRepository()
+    : super(databaseProvider: () => throw StateError('Database not used.'));
+
+  @override
+  Future<List<Estimate>> findApprovedByMonth(
     String month, {
     int companyId = Company.defaultCompanyId,
   }) async {
