@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quick_clock/data/repositories/additional_service_repository.dart';
 import 'package:quick_clock/data/repositories/company_repository.dart';
+import 'package:quick_clock/data/repositories/estimate_repository.dart';
 import 'package:quick_clock/data/repositories/settings_repository.dart';
 import 'package:quick_clock/data/repositories/work_day_repository.dart';
 import 'package:quick_clock/features/companies/presentation/company_list_page.dart';
@@ -16,6 +17,7 @@ class QuickClockApp extends StatelessWidget {
     this.workDayRepository,
     this.settingsRepository,
     this.additionalServiceRepository,
+    this.estimateRepository,
     this.nowProvider,
   });
 
@@ -23,6 +25,7 @@ class QuickClockApp extends StatelessWidget {
   final WorkDayRepository? workDayRepository;
   final SettingsRepository? settingsRepository;
   final AdditionalServiceRepository? additionalServiceRepository;
+  final EstimateRepository? estimateRepository;
   final DateTime Function()? nowProvider;
 
   @override
@@ -38,6 +41,7 @@ class QuickClockApp extends StatelessWidget {
         workDayRepository: workDayRepository,
         settingsRepository: settingsRepository,
         additionalServiceRepository: additionalServiceRepository,
+        estimateRepository: estimateRepository,
         nowProvider: nowProvider,
       ),
     );

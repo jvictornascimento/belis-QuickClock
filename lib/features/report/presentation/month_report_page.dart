@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quick_clock/data/repositories/additional_service_repository.dart';
+import 'package:quick_clock/data/repositories/estimate_repository.dart';
 import 'package:quick_clock/data/repositories/settings_repository.dart';
 import 'package:quick_clock/data/repositories/work_day_repository.dart';
 import 'package:quick_clock/features/report/application/month_report_pdf_generator.dart';
@@ -7,6 +8,7 @@ import 'package:quick_clock/features/report/domain/month_report.dart';
 import 'package:quick_clock/features/report/presentation/month_report_pdf_preview_page.dart';
 import 'package:quick_clock/models/additional_service.dart';
 import 'package:quick_clock/models/company.dart';
+import 'package:quick_clock/models/estimate.dart';
 import 'package:quick_clock/models/work_day.dart';
 import 'package:quick_clock/shared/money/money_formatter.dart';
 import 'package:printing/printing.dart';
@@ -19,6 +21,7 @@ class MonthReportPage extends StatefulWidget {
     this.workDayRepository,
     this.settingsRepository,
     this.additionalServiceRepository,
+    this.estimateRepository,
     this.pdfGenerator = const MonthReportPdfGenerator(),
   });
 
@@ -27,6 +30,7 @@ class MonthReportPage extends StatefulWidget {
   final WorkDayRepository? workDayRepository;
   final SettingsRepository? settingsRepository;
   final AdditionalServiceRepository? additionalServiceRepository;
+  final EstimateRepository? estimateRepository;
   final MonthReportPdfGenerator pdfGenerator;
 
   @override
@@ -37,6 +41,7 @@ class _MonthReportPageState extends State<MonthReportPage> {
   late final WorkDayRepository _workDayRepository;
   late final SettingsRepository _settingsRepository;
   late final AdditionalServiceRepository _additionalServiceRepository;
+  late final EstimateRepository _estimateRepository;
   late final TextEditingController _monthController;
 
   bool _isLoading = false;
@@ -51,6 +56,7 @@ class _MonthReportPageState extends State<MonthReportPage> {
     _settingsRepository = widget.settingsRepository ?? SettingsRepository();
     _additionalServiceRepository =
         widget.additionalServiceRepository ?? AdditionalServiceRepository();
+    _estimateRepository = widget.estimateRepository ?? EstimateRepository();
     _monthController = TextEditingController(text: _currentMonth());
     _loadReport();
   }
@@ -141,6 +147,10 @@ class _MonthReportPageState extends State<MonthReportPage> {
       month,
       companyId: widget.companyId,
     );
+    final approvedEstimates = await _estimateRepository.findApprovedByMonth(
+      month,
+      companyId: widget.companyId,
+    );
 
     if (!mounted) {
       return;
@@ -153,9 +163,13 @@ class _MonthReportPageState extends State<MonthReportPage> {
         month: month,
         workDays: workDays,
         additionalServices: additionalServices,
+        approvedEstimates: approvedEstimates,
         halfDayValueCents: settings.halfDayValueCents,
       );
-      _message = workDays.isEmpty && additionalServices.isEmpty
+      _message =
+          workDays.isEmpty &&
+              additionalServices.isEmpty &&
+              approvedEstimates.isEmpty
           ? 'Nenhum registro nesse mes.'
           : null;
     });
@@ -197,7 +211,8 @@ class _MonthReportPageState extends State<MonthReportPage> {
                 ],
                 if (report != null &&
                     (report.workDays.isNotEmpty ||
-                        report.additionalServices.isNotEmpty))
+                        report.additionalServices.isNotEmpty ||
+                        report.approvedEstimates.isNotEmpty))
                   Expanded(
                     child: MonthReportView(
                       report: report,
@@ -262,20 +277,43 @@ class MonthReportView extends StatelessWidget {
                 report.workDays.length +
                 (report.additionalServices.isEmpty
                     ? 0
-                    : report.additionalServices.length + 1),
+                    : report.additionalServices.length + 1) +
+                (report.approvedEstimates.isEmpty
+                    ? 0
+                    : report.approvedEstimates.length + 1),
             separatorBuilder: (context, index) => const Divider(height: 1),
             itemBuilder: (context, index) {
               if (index < report.workDays.length) {
                 return MonthReportTile(workDay: report.workDays[index]);
               }
 
-              if (index == report.workDays.length) {
-                return AdditionalServicesSummary(report: report);
+              var currentIndex = report.workDays.length;
+
+              if (report.additionalServices.isNotEmpty) {
+                if (index == currentIndex) {
+                  return AdditionalServicesSummary(report: report);
+                }
+
+                currentIndex++;
+                final serviceEndIndex =
+                    currentIndex + report.additionalServices.length;
+                if (index < serviceEndIndex) {
+                  final serviceIndex = index - currentIndex;
+                  return AdditionalServiceReportTile(
+                    service: report.additionalServices[serviceIndex],
+                  );
+                }
+
+                currentIndex = serviceEndIndex;
               }
 
-              final serviceIndex = index - report.workDays.length - 1;
-              return AdditionalServiceReportTile(
-                service: report.additionalServices[serviceIndex],
+              if (index == currentIndex) {
+                return ApprovedEstimatesSummary(report: report);
+              }
+
+              final estimateIndex = index - currentIndex - 1;
+              return ApprovedEstimateReportTile(
+                estimate: report.approvedEstimates[estimateIndex],
               );
             },
           ),
@@ -289,6 +327,10 @@ class MonthReportView extends StatelessWidget {
         if (report.additionalServices.isNotEmpty)
           Text(
             'Servicos adicionais: ${MoneyFormatter.formatCents(report.additionalServicesValueCents)}',
+          ),
+        if (report.approvedEstimates.isNotEmpty)
+          Text(
+            'Orcamentos aprovados: ${MoneyFormatter.formatCents(report.approvedEstimatesValueCents)}',
           ),
         Text('Total: ${MoneyFormatter.formatCents(report.totalValueCents)}'),
         const SizedBox(height: 16),
@@ -377,6 +419,57 @@ class AdditionalServiceReportTile extends StatelessWidget {
       title: Text(service.description),
       subtitle: Text(service.date),
       trailing: Text(MoneyFormatter.formatCents(service.valueCents)),
+    );
+  }
+}
+
+class ApprovedEstimatesSummary extends StatelessWidget {
+  const ApprovedEstimatesSummary({super.key, required this.report});
+
+  final MonthReport report;
+
+  @override
+  Widget build(BuildContext context) {
+    if (report.approvedEstimates.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Orcamentos aprovados',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Total: ${MoneyFormatter.formatCents(report.approvedEstimatesValueCents)}',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ApprovedEstimateReportTile extends StatelessWidget {
+  const ApprovedEstimateReportTile({super.key, required this.estimate});
+
+  final Estimate estimate;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(estimate.description),
+      subtitle: Text(
+        estimate.approvedAt?.toIso8601String().split('T').first ??
+            estimate.date,
+      ),
+      trailing: Text(MoneyFormatter.formatCents(estimate.valueCents)),
     );
   }
 }
