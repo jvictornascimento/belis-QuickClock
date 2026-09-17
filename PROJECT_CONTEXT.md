@@ -67,6 +67,10 @@ but only once per company.
 Additional services are scoped by company and must only appear in that company's
 monthly report.
 
+Estimates are scoped by company and keep their own history. Draft estimates do
+not enter payment totals. Approved estimates keep the original record and store
+`approved_at` for the future report payment month.
+
 ## Screens
 
 ### Home
