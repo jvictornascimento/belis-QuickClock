@@ -90,6 +90,7 @@ Allows editing and saving the half day value and the active weekdays in local st
 
 Shows only dates with at least one marked period. Empty days should not appear.
 It also shows the monthly total using the saved half day value.
+Reports are scoped by selected company and must show the company name.
 
 Clean report example:
 

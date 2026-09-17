@@ -14,6 +14,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: MonthReportPage(
+          companyName: 'Empresa A',
           workDayRepository: FakeWorkDayRepository(
             monthResults: [
               _workDay('2026-06-16', before: true),
@@ -34,6 +35,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('2026-06-16'), findsOneWidget);
+    expect(find.text('Empresa A'), findsOneWidget);
     expect(find.text('Dias trabalhados: 2'), findsOneWidget);
     expect(find.text('Periodos: 3'), findsOneWidget);
     expect(find.text('Pontos: R\$ 240,00'), findsOneWidget);

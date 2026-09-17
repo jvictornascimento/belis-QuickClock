@@ -3,12 +3,14 @@ import 'package:quick_clock/models/work_day.dart';
 
 class MonthReport {
   const MonthReport({
+    required this.companyName,
     required this.month,
     required this.workDays,
     this.additionalServices = const [],
     required this.halfDayValueCents,
   });
 
+  final String companyName;
   final String month;
   final List<WorkDay> workDays;
   final List<AdditionalService> additionalServices;

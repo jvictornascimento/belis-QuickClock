@@ -9,6 +9,7 @@ void main() {
     final generator = MonthReportPdfGenerator();
     final bytes = await generator.generate(
       MonthReport(
+        companyName: 'Empresa A',
         month: '2026-06',
         halfDayValueCents: 8000,
         workDays: [
