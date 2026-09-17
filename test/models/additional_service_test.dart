@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quick_clock/models/additional_service.dart';
+import 'package:quick_clock/models/company.dart';
 
 void main() {
   test('maps additional service to database columns', () {
@@ -16,6 +17,7 @@ void main() {
 
     expect(service.toMap(), {
       'id': 1,
+      'company_id': Company.defaultCompanyId,
       'date': '2026-08-25',
       'description': 'Troca de sensor',
       'value_cents': 5000,
@@ -27,6 +29,7 @@ void main() {
   test('restores additional service from database map', () {
     final service = AdditionalService.fromMap({
       'id': 1,
+      'company_id': Company.defaultCompanyId,
       'date': '2026-08-25',
       'description': 'Troca de sensor',
       'value_cents': 5000,
@@ -34,6 +37,7 @@ void main() {
       'updated_at': '2026-08-25T09:00:00.000',
     });
 
+    expect(service.companyId, Company.defaultCompanyId);
     expect(service.date, '2026-08-25');
     expect(service.description, 'Troca de sensor');
     expect(service.valueCents, 5000);

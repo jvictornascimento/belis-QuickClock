@@ -80,8 +80,12 @@ class FakeAdditionalServiceRepository extends AdditionalServiceRepository {
   final List<AdditionalService> monthResults;
 
   @override
-  Future<List<AdditionalService>> findByMonth(String month) async =>
-      monthResults;
+  Future<List<AdditionalService>> findByMonth(
+    String month, {
+    int companyId = Company.defaultCompanyId,
+  }) async {
+    return monthResults;
+  }
 }
 
 class FakeSettingsRepository extends SettingsRepository {

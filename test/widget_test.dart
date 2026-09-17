@@ -224,5 +224,10 @@ class FakeAdditionalServiceRepository extends AdditionalServiceRepository {
     : super(databaseProvider: () => throw StateError('Database not used.'));
 
   @override
-  Future<List<AdditionalService>> findByMonth(String month) async => [];
+  Future<List<AdditionalService>> findByMonth(
+    String month, {
+    int companyId = Company.defaultCompanyId,
+  }) async {
+    return [];
+  }
 }
