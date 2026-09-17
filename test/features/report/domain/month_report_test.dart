@@ -6,6 +6,7 @@ import 'package:quick_clock/models/work_day.dart';
 void main() {
   test('counts worked days and periods', () {
     final report = MonthReport(
+      companyName: 'Empresa A',
       month: '2026-06',
       halfDayValueCents: 8000,
       workDays: [
