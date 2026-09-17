@@ -6,6 +6,7 @@ import 'package:quick_clock/features/report/application/month_report_pdf_generat
 import 'package:quick_clock/features/report/domain/month_report.dart';
 import 'package:quick_clock/features/report/presentation/month_report_pdf_preview_page.dart';
 import 'package:quick_clock/models/additional_service.dart';
+import 'package:quick_clock/models/company.dart';
 import 'package:quick_clock/models/work_day.dart';
 import 'package:quick_clock/shared/money/money_formatter.dart';
 import 'package:printing/printing.dart';
@@ -13,12 +14,14 @@ import 'package:printing/printing.dart';
 class MonthReportPage extends StatefulWidget {
   const MonthReportPage({
     super.key,
+    this.companyId = Company.defaultCompanyId,
     this.workDayRepository,
     this.settingsRepository,
     this.additionalServiceRepository,
     this.pdfGenerator = const MonthReportPdfGenerator(),
   });
 
+  final int companyId;
   final WorkDayRepository? workDayRepository;
   final SettingsRepository? settingsRepository;
   final AdditionalServiceRepository? additionalServiceRepository;
@@ -125,10 +128,16 @@ class _MonthReportPageState extends State<MonthReportPage> {
       _message = null;
     });
 
-    final settings = await _settingsRepository.getSettings();
-    final workDays = await _workDayRepository.findMarkedByMonth(month);
+    final settings = await _settingsRepository.getSettings(
+      companyId: widget.companyId,
+    );
+    final workDays = await _workDayRepository.findMarkedByMonth(
+      month,
+      companyId: widget.companyId,
+    );
     final additionalServices = await _additionalServiceRepository.findByMonth(
       month,
+      companyId: widget.companyId,
     );
 
     if (!mounted) {

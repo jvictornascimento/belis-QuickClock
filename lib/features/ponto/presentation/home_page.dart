@@ -8,17 +8,20 @@ import 'package:quick_clock/features/report/presentation/month_report_page.dart'
 import 'package:quick_clock/features/search/presentation/search_page.dart';
 import 'package:quick_clock/features/settings/presentation/settings_page.dart';
 import 'package:quick_clock/models/app_settings.dart';
+import 'package:quick_clock/models/company.dart';
 import 'package:quick_clock/models/work_day.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
+    required this.company,
     this.workDayRepository,
     this.settingsRepository,
     this.additionalServiceRepository,
     this.nowProvider,
   });
 
+  final Company company;
   final WorkDayRepository? workDayRepository;
   final SettingsRepository? settingsRepository;
   final AdditionalServiceRepository? additionalServiceRepository;
@@ -34,6 +37,7 @@ class _HomePageState extends State<HomePage> {
   late final WorkDayEditPolicy _editPolicy;
   late final DateTime _today;
   late final String _todayKey;
+  late final int _companyId;
 
   AppSettings? _settings;
   WorkDay? _workDay;
@@ -49,18 +53,21 @@ class _HomePageState extends State<HomePage> {
     _editPolicy = WorkDayEditPolicy(nowProvider: widget.nowProvider);
     _today = (widget.nowProvider ?? DateTime.now)();
     _todayKey = WorkDay.dateKey(_today);
+    _companyId = widget.company.id ?? Company.defaultCompanyId;
     _loadState();
   }
 
   Future<void> _loadState() async {
     try {
       final results = await Future.wait([
-        _settingsRepository.getSettings(),
-        _workDayRepository.findByDate(_todayKey),
+        _settingsRepository.getSettings(companyId: _companyId),
+        _workDayRepository.findByDate(_todayKey, companyId: _companyId),
       ]);
       final settings = results[0] as AppSettings;
       final savedWorkDay = results[1] as WorkDay?;
-      final workDay = savedWorkDay ?? WorkDay.emptyFor(_today);
+      final workDay =
+          savedWorkDay ??
+          WorkDay.emptyFor(_today).copyWith(companyId: _companyId);
 
       if (!mounted) {
         return;
@@ -153,7 +160,16 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('QuickClock'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('QuickClock'),
+            Text(
+              widget.company.name,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             tooltip: 'Relatorio',
@@ -161,6 +177,7 @@ class _HomePageState extends State<HomePage> {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (_) => MonthReportPage(
+                    companyId: _companyId,
                     workDayRepository: widget.workDayRepository,
                     settingsRepository: widget.settingsRepository,
                     additionalServiceRepository:
@@ -176,8 +193,10 @@ class _HomePageState extends State<HomePage> {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder: (_) =>
-                      SearchPage(workDayRepository: widget.workDayRepository),
+                  builder: (_) => SearchPage(
+                    companyId: _companyId,
+                    workDayRepository: widget.workDayRepository,
+                  ),
                 ),
               );
             },
@@ -189,6 +208,7 @@ class _HomePageState extends State<HomePage> {
               await Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (_) => SettingsPage(
+                    companyId: _companyId,
                     settingsRepository: widget.settingsRepository,
                   ),
                 ),
@@ -207,6 +227,7 @@ class _HomePageState extends State<HomePage> {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (_) => AdditionalServicesPage(
+                        companyId: _companyId,
                         additionalServiceRepository:
                             widget.additionalServiceRepository,
                         nowProvider: widget.nowProvider,
