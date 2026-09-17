@@ -70,6 +70,8 @@ monthly report.
 Estimates are scoped by company and keep their own history. Draft estimates do
 not enter payment totals. Approved estimates keep the original record and store
 `approved_at` for the future report payment month.
+Monthly reports include only approved estimates, grouped by the `approved_at`
+month and shown separately from additional services.
 
 ## Screens
 

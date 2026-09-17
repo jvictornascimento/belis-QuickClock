@@ -23,6 +23,25 @@ class EstimateRepository {
     return rows.map(Estimate.fromMap).toList();
   }
 
+  Future<List<Estimate>> findApprovedByMonth(
+    String month, {
+    int companyId = Company.defaultCompanyId,
+  }) async {
+    final database = await _databaseProvider();
+    final rows = await database.query(
+      AppDatabase.estimateTable,
+      where: '''
+        company_id = ?
+        AND status = ?
+        AND approved_at LIKE ?
+      ''',
+      whereArgs: [companyId, EstimateStatus.approved.name, '$month%'],
+      orderBy: 'approved_at ASC, id ASC',
+    );
+
+    return rows.map(Estimate.fromMap).toList();
+  }
+
   Future<Estimate> save(Estimate estimate) async {
     if (estimate.description.trim().isEmpty) {
       throw ArgumentError.value(

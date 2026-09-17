@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quick_clock/data/repositories/additional_service_repository.dart';
 import 'package:quick_clock/data/repositories/company_repository.dart';
+import 'package:quick_clock/data/repositories/estimate_repository.dart';
 import 'package:quick_clock/data/repositories/settings_repository.dart';
 import 'package:quick_clock/data/repositories/work_day_repository.dart';
 import 'package:quick_clock/features/ponto/presentation/home_page.dart';
@@ -13,6 +14,7 @@ class CompanyListPage extends StatefulWidget {
     this.workDayRepository,
     this.settingsRepository,
     this.additionalServiceRepository,
+    this.estimateRepository,
     this.nowProvider,
   });
 
@@ -20,6 +22,7 @@ class CompanyListPage extends StatefulWidget {
   final WorkDayRepository? workDayRepository;
   final SettingsRepository? settingsRepository;
   final AdditionalServiceRepository? additionalServiceRepository;
+  final EstimateRepository? estimateRepository;
   final DateTime Function()? nowProvider;
 
   @override
@@ -76,6 +79,7 @@ class _CompanyListPageState extends State<CompanyListPage> {
           workDayRepository: widget.workDayRepository,
           settingsRepository: widget.settingsRepository,
           additionalServiceRepository: widget.additionalServiceRepository,
+          estimateRepository: widget.estimateRepository,
           nowProvider: widget.nowProvider,
         ),
       ),
