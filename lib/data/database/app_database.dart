@@ -11,7 +11,7 @@ class AppDatabase {
   AppDatabase._();
 
   static const databaseName = 'ponto_eletronico.db';
-  static const databaseVersion = 8;
+  static const databaseVersion = 9;
   static const localSeedAssetPath = 'local_seed/initial_work_days.sql';
   static const useLocalSeed = bool.fromEnvironment('LOCAL_SEED_WORK_DAYS');
 
@@ -19,6 +19,7 @@ class AppDatabase {
   static const workDayTable = 'work_day';
   static const settingsTable = 'settings';
   static const additionalServiceTable = 'additional_service';
+  static const estimateTable = 'estimate';
 
   static Database? _database;
 
@@ -42,6 +43,7 @@ class AppDatabase {
         await _createWorkDayTable(database);
         await _createSettingsTable(database);
         await _createAdditionalServiceTable(database);
+        await _createEstimateTable(database);
         if (useLocalSeed) {
           await _applyLocalSeed(database);
         }
@@ -79,6 +81,10 @@ class AppDatabase {
 
         if (oldVersion < 8) {
           await _migrateAdditionalServicesToCompanyScope(database);
+        }
+
+        if (oldVersion < 9) {
+          await _createEstimateTable(database);
         }
       },
     );
@@ -315,6 +321,22 @@ class AppDatabase {
       FROM $legacyAdditionalServiceTable
     ''');
     await database.execute('DROP TABLE $legacyAdditionalServiceTable');
+  }
+
+  static Future<void> _createEstimateTable(Database database) async {
+    await database.execute('''
+      CREATE TABLE IF NOT EXISTS $estimateTable (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        company_id INTEGER NOT NULL DEFAULT ${Company.defaultCompanyId},
+        date TEXT NOT NULL,
+        description TEXT NOT NULL,
+        value_cents INTEGER NOT NULL DEFAULT 0 CHECK (value_cents >= 0),
+        status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'approved', 'rejected')),
+        approved_at TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    ''');
   }
 
   static Future<void> _addWorkScheduleColumns(Database database) async {
