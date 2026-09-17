@@ -15,6 +15,7 @@ class MonthReportPage extends StatefulWidget {
   const MonthReportPage({
     super.key,
     this.companyId = Company.defaultCompanyId,
+    this.companyName = Company.defaultCompanyName,
     this.workDayRepository,
     this.settingsRepository,
     this.additionalServiceRepository,
@@ -22,6 +23,7 @@ class MonthReportPage extends StatefulWidget {
   });
 
   final int companyId;
+  final String companyName;
   final WorkDayRepository? workDayRepository;
   final SettingsRepository? settingsRepository;
   final AdditionalServiceRepository? additionalServiceRepository;
@@ -77,7 +79,7 @@ class _MonthReportPageState extends State<MonthReportPage> {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => MonthReportPdfPreviewPage(
-          title: 'Relatorio ${report.month}',
+          title: 'Relatorio ${report.companyName} ${report.month}',
           bytes: bytes,
         ),
       ),
@@ -147,6 +149,7 @@ class _MonthReportPageState extends State<MonthReportPage> {
     setState(() {
       _isLoading = false;
       _report = MonthReport(
+        companyName: widget.companyName,
         month: month,
         workDays: workDays,
         additionalServices: additionalServices,
@@ -239,6 +242,13 @@ class MonthReportView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Text(
+          report.companyName,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 4),
         Text(
           report.month,
           style: Theme.of(

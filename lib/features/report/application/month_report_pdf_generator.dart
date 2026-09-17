@@ -26,6 +26,11 @@ class MonthReportPdfGenerator {
               style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold),
             ),
             pw.SizedBox(height: 4),
+            pw.Text(
+              report.companyName,
+              style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+            ),
+            pw.SizedBox(height: 2),
             pw.Text(report.month, style: const pw.TextStyle(fontSize: 14)),
             pw.SizedBox(height: 24),
             _buildTable(report.workDays),
