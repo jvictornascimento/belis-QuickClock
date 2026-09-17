@@ -1,4 +1,5 @@
 import 'package:quick_clock/data/database/app_database.dart';
+import 'package:quick_clock/models/company.dart';
 import 'package:quick_clock/models/work_day.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -8,12 +9,15 @@ class WorkDayRepository {
 
   final Future<Database> Function() _databaseProvider;
 
-  Future<WorkDay?> findByDate(String date) async {
+  Future<WorkDay?> findByDate(
+    String date, {
+    int companyId = Company.defaultCompanyId,
+  }) async {
     final database = await _databaseProvider();
     final rows = await database.query(
       AppDatabase.workDayTable,
-      where: 'date = ?',
-      whereArgs: [date],
+      where: 'company_id = ? AND date = ?',
+      whereArgs: [companyId, date],
       limit: 1,
     );
 
@@ -24,15 +28,19 @@ class WorkDayRepository {
     return WorkDay.fromMap(rows.first);
   }
 
-  Future<List<WorkDay>> findMarkedByMonth(String month) async {
+  Future<List<WorkDay>> findMarkedByMonth(
+    String month, {
+    int companyId = Company.defaultCompanyId,
+  }) async {
     final database = await _databaseProvider();
     final rows = await database.query(
       AppDatabase.workDayTable,
       where: '''
-        date LIKE ?
+        company_id = ?
+        AND date LIKE ?
         AND (worked_before_lunch = 1 OR worked_after_lunch = 1)
       ''',
-      whereArgs: ['$month%'],
+      whereArgs: [companyId, '$month%'],
       orderBy: 'date ASC',
     );
 
@@ -42,7 +50,10 @@ class WorkDayRepository {
   Future<WorkDay> save(WorkDay workDay) async {
     final database = await _databaseProvider();
     final now = DateTime.now();
-    final existingWorkDay = await findByDate(workDay.date);
+    final existingWorkDay = await findByDate(
+      workDay.date,
+      companyId: workDay.companyId,
+    );
 
     if (existingWorkDay == null) {
       final valueToInsert = workDay.copyWith(updatedAt: now);
@@ -63,8 +74,8 @@ class WorkDayRepository {
     await database.update(
       AppDatabase.workDayTable,
       valueToUpdate.toMap()..remove('id'),
-      where: 'date = ?',
-      whereArgs: [workDay.date],
+      where: 'company_id = ? AND date = ?',
+      whereArgs: [workDay.companyId, workDay.date],
     );
 
     return valueToUpdate;

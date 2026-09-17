@@ -178,7 +178,12 @@ class FakeWorkDayRepository extends WorkDayRepository {
   WorkDay? savedWorkDay;
 
   @override
-  Future<WorkDay?> findByDate(String date) async => currentWorkDay;
+  Future<WorkDay?> findByDate(
+    String date, {
+    int companyId = Company.defaultCompanyId,
+  }) async {
+    return currentWorkDay;
+  }
 
   @override
   Future<WorkDay> save(WorkDay workDay) async {
@@ -189,7 +194,12 @@ class FakeWorkDayRepository extends WorkDayRepository {
   }
 
   @override
-  Future<List<WorkDay>> findMarkedByMonth(String month) async => [];
+  Future<List<WorkDay>> findMarkedByMonth(
+    String month, {
+    int companyId = Company.defaultCompanyId,
+  }) async {
+    return [];
+  }
 }
 
 class FakeSettingsRepository extends SettingsRepository {
