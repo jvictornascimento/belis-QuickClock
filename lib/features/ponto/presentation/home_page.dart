@@ -3,6 +3,7 @@ import 'package:quick_clock/data/repositories/additional_service_repository.dart
 import 'package:quick_clock/data/repositories/settings_repository.dart';
 import 'package:quick_clock/data/repositories/work_day_repository.dart';
 import 'package:quick_clock/features/additional_services/presentation/additional_services_page.dart';
+import 'package:quick_clock/features/estimates/presentation/estimates_page.dart';
 import 'package:quick_clock/features/ponto/domain/work_day_edit_policy.dart';
 import 'package:quick_clock/features/report/presentation/month_report_page.dart';
 import 'package:quick_clock/features/search/presentation/search_page.dart';
@@ -236,12 +237,26 @@ class _HomePageState extends State<HomePage> {
                     ),
                   );
                   break;
+                case HomeMenuAction.estimates:
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => EstimatesPage(
+                        companyId: _companyId,
+                        nowProvider: widget.nowProvider,
+                      ),
+                    ),
+                  );
+                  break;
               }
             },
             itemBuilder: (context) => const [
               PopupMenuItem(
                 value: HomeMenuAction.additionalServices,
                 child: Text('Servicos adicionais'),
+              ),
+              PopupMenuItem(
+                value: HomeMenuAction.estimates,
+                child: Text('Orcamentos'),
               ),
             ],
           ),
@@ -327,7 +342,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-enum HomeMenuAction { additionalServices }
+enum HomeMenuAction { additionalServices, estimates }
 
 class PeriodButton extends StatelessWidget {
   const PeriodButton({
