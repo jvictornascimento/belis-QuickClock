@@ -86,6 +86,52 @@ not enter payment totals. Approved estimates keep the original record and store
 Monthly reports include only approved estimates, grouped by the `approved_at`
 month and shown separately from additional services.
 
+## Financial Control
+
+This app is for personal use. Besides tracking work by company, it should also
+support a simple financial control module.
+
+Expected income already comes from monthly work reports:
+
+- Worked day totals by company.
+- Additional services by company.
+- Approved estimates by company.
+
+These expected values must be possible to mark as paid. When marked as paid,
+they become income entries in the financial control. Keep the source relation so
+the user can see whether the income came from worked days, an additional
+service, or an approved estimate.
+
+The financial control must also allow expense entries with:
+
+- Date.
+- Description.
+- Amount in cents.
+- Payment method, such as cash, Pix, debit, or credit card.
+- Optional category.
+- Optional installment data, for example `1/3`, `2/3`, `3/3`.
+
+Installment expenses should appear month by month in the dashboard. Example:
+`Credit card - tool purchase - installment 1/3` in one month, then installment
+`2/3` in the next month, and so on.
+
+### Financial Dashboard
+
+The financial dashboard is not the main screen. The main screen must remain the
+daily work entry flow. The dashboard should be opened only when the user chooses
+to view financial information.
+
+Dashboard views should include:
+
+- Monthly income.
+- Monthly expenses.
+- Monthly balance.
+- Detail by company.
+- Detail by category.
+- Detail by payment method.
+- Installment timeline by month.
+- Paid and unpaid expected income.
+
 ## Screens
 
 ### Home
@@ -128,6 +174,12 @@ Total: R$ 240,00
 ```
 
 PDF is the preferred export format because it is simple to preview, share, print, and keep consistent across Android and iOS.
+
+### Financial Dashboard
+
+Shows income, expenses, balance, paid items, pending expected income, categories,
+payment methods, and installment details by month. It must be available from a
+menu or secondary navigation, not as the default app entry screen.
 
 ## Story Plan
 
