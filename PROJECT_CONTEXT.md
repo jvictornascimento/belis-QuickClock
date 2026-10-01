@@ -121,11 +121,17 @@ The financial dashboard is not the main screen. The main screen must remain the
 daily work entry flow. The dashboard should be opened only when the user chooses
 to view financial information.
 
+The dashboard must allow selecting the reference month. This selected month is
+used both for past analysis and future planning, so the user can see how much
+was spent, how much is expected to be spent, how much has already been received,
+and how much is still expected to enter.
+
 Dashboard views should include:
 
 - Monthly income.
 - Monthly expenses.
 - Monthly balance.
+- Expected income and expenses for the selected month.
 - Detail by company.
 - Detail by category.
 - Detail by payment method.
@@ -178,8 +184,10 @@ PDF is the preferred export format because it is simple to preview, share, print
 ### Financial Dashboard
 
 Shows income, expenses, balance, paid items, pending expected income, categories,
-payment methods, and installment details by month. It must be available from a
-menu or secondary navigation, not as the default app entry screen.
+payment methods, and installment details for the selected month. It must help
+the user compare what already happened with what is still planned, including
+future installments. It must be available from a menu or secondary navigation,
+not as the default app entry screen.
 
 ## Story Plan
 
