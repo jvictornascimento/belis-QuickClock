@@ -4,6 +4,19 @@
 
 This project is a small offline time clock app built with Flutter. The first target is Android, but the code should stay ready for iOS by avoiding platform-specific native code when possible.
 
+The Flutter app is now the functional reference for a planned PWA migration.
+The future backend and frontend projects must keep the same product rules unless
+the shared context is intentionally updated.
+
+## Related Project Paths
+
+- Flutter reference app: `/mnt/c/projetos/ponto-eletronico`
+- Spring backend: `/mnt/z/Spring/QuickClock`
+- React PWA frontend: `/mnt/z/react/QuickClock`
+
+When `PROJECT_CONTEXT.md` changes in one project, mirror the same context update
+in the other two paths so backend, frontend, and Flutter reference stay aligned.
+
 The app does not track clock-in or clock-out times. It only stores whether the user worked in each half of the current day:
 
 - Before lunch

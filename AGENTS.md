@@ -52,3 +52,11 @@ Pull requests should include a concise description, linked issue when applicable
 ## Agent-Specific Instructions
 
 Before editing, inspect the current repository state and avoid assuming a framework that is not present. Keep changes scoped, document new commands here, and do not remove user-created files unless explicitly requested.
+
+Keep `PROJECT_CONTEXT.md` synchronized with the related QuickClock projects:
+
+- Flutter reference app: `/mnt/c/projetos/ponto-eletronico`
+- Spring backend: `/mnt/z/Spring/QuickClock`
+- React PWA frontend: `/mnt/z/react/QuickClock`
+
+If product rules or architecture context change in one path, update the same context in the other paths during the same work.
